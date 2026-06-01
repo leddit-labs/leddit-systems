@@ -8,6 +8,8 @@ services:
       MYSQL_DATABASE: si_db
       MYSQL_USER: user
       MYSQL_PASSWORD: PASSWORD
+    networks:
+      - gameapi-net
     ports:
       - "3306:3306"
     volumes:
@@ -15,3 +17,7 @@ services:
 
 volumes:
   mysql_data:
+
+networks:
+  gameapi-net:
+    driver: bridge
