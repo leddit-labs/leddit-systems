@@ -1,17 +1,17 @@
 services:
   mysql:
     build: .
-    container_name: si-mysql
+    container_name: gameapi-mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
       MYSQL_DATABASE: si_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: PASSWORD
+      MYSQL_USER: gameapi
+      MYSQL_PASSWORD: gameapi
     networks:
       - gameapi-net
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
