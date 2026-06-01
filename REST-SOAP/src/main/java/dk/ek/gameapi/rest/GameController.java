@@ -18,10 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class GameController {
 
     private final GameService gameService;
-
-    // GET /api/v1/games?page=0&size=20&sort=name,asc
-    // Spring binds the Pageable from query params automatically.
-    // Default sort by id keeps paging deterministic (MySQL order isn't guaranteed otherwise).
     @GetMapping
     public ResponseEntity<PagedResponse<GameResponse>> getGames(
             @PageableDefault(size = 20, sort = "id") Pageable pageable) {
@@ -29,7 +25,7 @@ public class GameController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<GameResponse> getGame(@PathVariable Long id) {
+    public ResponseEntity<GameResponse> getGame(@PathVariable Integer id) {
         return ResponseEntity.ok(gameService.getGameById(id));
     }
 }

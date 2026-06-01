@@ -19,10 +19,11 @@ public class Game {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
     @Column(nullable = false)
     private String name;
     private String slug;
+    @Column(name = "year_published", columnDefinition = "YEAR")
     private Integer yearPublished;
     private Double bggRating;
     private Double difficultyRating;

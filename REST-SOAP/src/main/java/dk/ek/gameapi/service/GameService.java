@@ -21,7 +21,7 @@ public class GameService {
         return PagedResponse.from(gameRepository.findAll(pageable), GameResponse::from);
     }
 
-    public GameResponse getGameById(Long id) {
+    public GameResponse getGameById(Integer id) {
         Game game = gameRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Game", id));
         return GameResponse.from(game);

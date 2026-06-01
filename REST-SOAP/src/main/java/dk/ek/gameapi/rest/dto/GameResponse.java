@@ -3,7 +3,7 @@ package dk.ek.gameapi.rest.dto;
 import dk.ek.gameapi.entity.Game;
 
 public record GameResponse(
-        Long id,
+        Integer id,
         String name,
         String slug,
         Integer yearPublished,
