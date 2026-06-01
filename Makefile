@@ -15,7 +15,7 @@ grpc-up: network
 	cd gRPC && docker compose up -d --build
 
 keycloak-up: network
-	cd keycloak && docker compose up
+	cd REST-SOAP/keycloak && docker compose up
 
 up: keycloak-up db-up game-up grpc-up
 
