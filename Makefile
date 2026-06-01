@@ -2,13 +2,26 @@
 network-create:
 	docker network create gameapi-net
 
-db-up:
+network:
+	docker network inspect gameapi-net >/dev/null 2>&1 || docker network create gameapi-net
+
+db-up: network
 	cd db && docker compose up -d --build
 
-game-up:
-	cd REST-SOAP &&	docker compose up -d --build
+game-up: network
+	cd REST-SOAP && docker compose up -d --build
 
-grpc-up:
+grpc-up: network
 	cd gRPC && docker compose up -d --build
 
-up: network-create db-up game-up grpc-up
+keycloak-up: network
+	cd REST-SOAP/keycloak && docker compose up
+
+up: keycloak-up db-up game-up grpc-up
+
+down:
+	cd REST-SOAP && docker compose down
+	cd db && docker compose down
+	cd REST-SOAP/keycloak && docker compose down
+	cd gRPC && docker compose down
+
