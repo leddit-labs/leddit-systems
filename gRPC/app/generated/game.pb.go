@@ -127,9 +127,11 @@ func (x *GetGameResponse) GetDescription() string {
 
 type ReviewMessage struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	GameId        int32                  `protobuf:"varint,1,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
-	Message       string                 `protobuf:"bytes,2,opt,name=message,proto3" json:"message,omitempty"`
-	UserId        int32                  `protobuf:"varint,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	Text          string                 `protobuf:"bytes,2,opt,name=text,proto3" json:"text,omitempty"`
+	StarAmount    int32                  `protobuf:"varint,3,opt,name=star_amount,json=starAmount,proto3" json:"star_amount,omitempty"`
+	UserId        int32                  `protobuf:"varint,4,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	GameId        int32                  `protobuf:"varint,5,opt,name=game_id,json=gameId,proto3" json:"game_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -164,23 +166,37 @@ func (*ReviewMessage) Descriptor() ([]byte, []int) {
 	return file_proto_game_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *ReviewMessage) GetGameId() int32 {
+func (x *ReviewMessage) GetTitle() string {
 	if x != nil {
-		return x.GameId
-	}
-	return 0
-}
-
-func (x *ReviewMessage) GetMessage() string {
-	if x != nil {
-		return x.Message
+		return x.Title
 	}
 	return ""
+}
+
+func (x *ReviewMessage) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+func (x *ReviewMessage) GetStarAmount() int32 {
+	if x != nil {
+		return x.StarAmount
+	}
+	return 0
 }
 
 func (x *ReviewMessage) GetUserId() int32 {
 	if x != nil {
 		return x.UserId
+	}
+	return 0
+}
+
+func (x *ReviewMessage) GetGameId() int32 {
+	if x != nil {
+		return x.GameId
 	}
 	return 0
 }
@@ -195,11 +211,14 @@ const file_proto_game_proto_rawDesc = "" +
 	"\x0fGetGameResponse\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x05R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12 \n" +
-	"\vdescription\x18\x03 \x01(\tR\vdescription\"[\n" +
-	"\rReviewMessage\x12\x17\n" +
-	"\agame_id\x18\x01 \x01(\x05R\x06gameId\x12\x18\n" +
-	"\amessage\x18\x02 \x01(\tR\amessage\x12\x17\n" +
-	"\auser_id\x18\x03 \x01(\x05R\x06userId2\x83\x01\n" +
+	"\vdescription\x18\x03 \x01(\tR\vdescription\"\x8c\x01\n" +
+	"\rReviewMessage\x12\x14\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x12\n" +
+	"\x04text\x18\x02 \x01(\tR\x04text\x12\x1f\n" +
+	"\vstar_amount\x18\x03 \x01(\x05R\n" +
+	"starAmount\x12\x17\n" +
+	"\auser_id\x18\x04 \x01(\x05R\x06userId\x12\x17\n" +
+	"\agame_id\x18\x05 \x01(\x05R\x06gameId2\x83\x01\n" +
 	"\vGameService\x126\n" +
 	"\aGetGame\x12\x14.game.GetGameRequest\x1a\x15.game.GetGameResponse\x12<\n" +
 	"\fReviewStream\x12\x13.game.ReviewMessage\x1a\x13.game.ReviewMessage(\x010\x01B\fZ\n" +

@@ -20,4 +20,4 @@ volumes:
 
 networks:
   gameapi-net:
-    driver: bridge
+    external: true

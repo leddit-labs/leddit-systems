@@ -2,3 +2,11 @@ services:
   app:
     build: .
     container_name: go-app
+    ports:
+      - "50051:50051"
+    networks:
+      - gameapi-net
+
+networks:
+  gameapi-net:
+    external: true
