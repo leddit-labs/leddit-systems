@@ -1,25 +1,4 @@
 services:
-  gameapi-mysql:
-    build: ../db # reuses existing db/Dockerfile
-    container_name: gameapi-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-si_db}
-      MYSQL_USER: ${MYSQL_USER:-gameapi}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-gameapi}
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - gameapi-net
-
   gameapi-redis:
     image: redis:7-alpine
     container_name: gameapi-redis
@@ -62,8 +41,6 @@ services:
     container_name: gameapi
     restart: unless-stopped
     depends_on:
-      gameapi-mysql:
-        condition: service_healthy
       gameapi-redis:
         condition: service_healthy
     environment:
