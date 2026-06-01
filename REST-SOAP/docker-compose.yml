@@ -1,5 +1,5 @@
 services:
-  si-mysql:
+  gameapi-mysql:
     build: ../db # reuses existing db/Dockerfile
     container_name: gameapi-mysql
     restart: unless-stopped
@@ -20,7 +20,7 @@ services:
     networks:
       - gameapi-net
 
-  si-redis:
+  gameapi-redis:
     image: redis:7-alpine
     container_name: gameapi-redis
     restart: unless-stopped
@@ -39,16 +39,16 @@ services:
     container_name: gameapi
     restart: unless-stopped
     depends_on:
-      si-mysql:
+      gameapi-mysql:
         condition: service_healthy
-      si-redis:
+      gameapi-redis:
         condition: service_healthy
     environment:
       # Spring relaxed binding maps these env vars onto application properties
-      SPRING_DATASOURCE_URL: "jdbc:mysql://si-mysql:3306/${MYSQL_DATABASE:-si_db}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://gameapi-mysql:3306/${MYSQL_DATABASE:-si_db}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-gameapi}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-gameapi}
-      SPRING_DATA_REDIS_HOST: si-redis
+      SPRING_DATA_REDIS_HOST: gameapi-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
     ports:
