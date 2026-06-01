@@ -22,5 +22,6 @@ up: keycloak-up db-up game-up grpc-up
 down:
 	cd REST-SOAP && docker compose down
 	cd db && docker compose down
-	cd keycloak && docker compose down
+	cd REST-SOAP/keycloak && docker compose down
+	cd gRPC && docker compose down
 

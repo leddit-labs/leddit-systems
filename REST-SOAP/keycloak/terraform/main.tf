@@ -27,10 +27,9 @@ resource "keycloak_realm" "gameapi" {
   display_name = "GameAPI"
 
   # Token lifetimes
-  access_token_lifespan              = "15m"
-  access_token_lifespan_for_implicit = "15m"
-  sso_session_idle_timeout           = "30m"
-  sso_session_max_lifespan           = "10h"
+  access_token_lifespan    = "15m"
+  sso_session_idle_timeout = "30m"
+  sso_session_max_lifespan = "10h"
 
   # Refresh token
   refresh_token_max_reuse = 0
@@ -52,8 +51,8 @@ resource "keycloak_openid_client" "gameapi_client" {
   access_type = "PUBLIC"
 
   # Both flows as requested
-  standard_flow_enabled        = true  # Authorization Code (browser)
-  direct_access_grants_enabled = true  # Password grant (curl / testing)
+  standard_flow_enabled        = true # Authorization Code (browser)
+  direct_access_grants_enabled = true # Password grant (curl / testing)
 
   # Where Keycloak is allowed to redirect after login
   valid_redirect_uris = var.valid_redirect_uris
@@ -105,26 +104,22 @@ resource "keycloak_user_roles" "test_user_roles" {
 # GitHub Identity Provider
 # ---------------------------------------------------------------------------
 resource "keycloak_oidc_identity_provider" "github" {
-  realm             = keycloak_realm.gameapi.id
-  alias             = "github"
-  display_name      = "GitHub"
-  provider_id       = "github"
-  enabled           = true
-  store_token       = false
-  trust_email       = true   # Trust the email GitHub provides — set false if you want verification
+  realm                         = keycloak_realm.gameapi.id
+  alias                         = "github"
+  display_name                  = "GitHub"
+  provider_id                   = "github"
+  enabled                       = true
+  store_token                   = false
+  trust_email                   = true
   first_broker_login_flow_alias = "first broker login"
 
   client_id     = var.github_client_id
   client_secret = var.github_client_secret
 
-  extra_config = {
-    # GitHub's OIDC-compatible endpoints
-    "authorizationUrl" = "https://github.com/login/oauth/authorize"
-    "tokenUrl"         = "https://github.com/login/oauth/access_token"
-    "userInfoUrl"      = "https://api.github.com/user"
-    "defaultScope"     = "user:email"
-    "syncMode"         = "IMPORT"
-  }
+  authorization_url = "https://github.com/login/oauth/authorize"
+  token_url         = "https://github.com/login/oauth/access_token"
+  user_info_url     = "https://api.github.com/user"
+  default_scopes    = "user:email"
 }
 
 # Map GitHub's "login" attribute to Keycloak username on first login
@@ -135,7 +130,9 @@ resource "keycloak_attribute_importer_identity_provider_mapper" "github_username
   attribute_name          = "login"
   user_attribute          = "username"
   extra_config = {
-    syncMode = "INHERIT"
+    syncMode         = "INHERIT"
+    claim            = "login"
+    "user.attribute" = "username"
   }
 }
 
@@ -147,7 +144,9 @@ resource "keycloak_attribute_importer_identity_provider_mapper" "github_email" {
   attribute_name          = "email"
   user_attribute          = "email"
   extra_config = {
-    syncMode = "INHERIT"
+    syncMode         = "INHERIT"
+    claim            = "email"
+    "user.attribute" = "email"
   }
 }
 
