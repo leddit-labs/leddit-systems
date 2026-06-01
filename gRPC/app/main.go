@@ -14,7 +14,7 @@ import (
 )
 
 type server struct {
-	pb.UnimplementedGameServiceServer //
+	pb.UnimplementedGameServiceServer //if client tries an rpc not implemented. throw UNIMPLEMENTED to client
 	db *sql.DB
 }
 
