@@ -1,4 +1,6 @@
 
+network-create:
+	docker network create gameapi-net
 
 db-up:
 	cd db && docker compose up -d --build
@@ -6,4 +8,7 @@ db-up:
 game-up:
 	cd REST-SOAP &&	docker compose up -d --build
 
-up: db-up game-up
+grpc-up:
+	cd gRPC && docker compose up -d --build
+
+up: network-create db-up game-up grpc-up
