@@ -1,1 +1,1 @@
-DATABASE_URL=mysql://user:PASSWORD@localhost:3306/si_db
+DATABASE_URL=mysql://gameapi:gameapi@si-mysql:3306/si_db

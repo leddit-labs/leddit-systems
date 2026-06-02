@@ -5,8 +5,8 @@ services:
     restart: unless-stopped
     ports:
       - "4000:4000"
-    environment:
-      DATABASE_URL: mysql://user:PASSWORD@si-mysql:3306/si_db
+    env_file:
+      - .env
     networks:
       - gameapi-net
 

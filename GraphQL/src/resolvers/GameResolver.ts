@@ -6,51 +6,30 @@ const prisma = new PrismaClient();
 
 @Resolver(Game)
 export class GameResolver {
-  // Query 1: Get all games with search
-  @Query(() => [Game])
-  async games(
-    @Arg("search", { nullable: true }) search?: string,
-  ) {
-    return prisma.game.findMany({
-      where: search
-        ? { name: { contains: search } }
-        : undefined,
-    });
-}
 
-  // Query 2: Get one game by ID
+  // Query 1: Get all games with optional search filter
+  @Query(() => [Game])
+  async getAllGames(@Arg("search", { nullable: true }) search?: string) {
+    return prisma.game.findMany({
+      where: search ? { name: { contains: search } } : undefined,
+    });
+  }
+
+  // Query 2: Get a single game by ID
   @Query(() => Game, { nullable: true })
-  async game(@Arg("id", () => Int) id: number) {
+  async getGameById(@Arg("id", () => Int) id: number) {
     return prisma.game.findUnique({ where: { id } });
   }
 
-  // Mutation 1: Create a game
+  // Mutation 1: Create a new game
   @Mutation(() => Game)
-async createGame(
-  @Arg("name") name: string,
-  @Arg("yearPublished", () => Int, { nullable: true }) yearPublished?: number,
-  @Arg("minPlayers", () => Int, { nullable: true }) minPlayers?: number,
-  @Arg("maxPlayers", () => Int, { nullable: true }) maxPlayers?: number
-) {
-  return prisma.game.create({
-    data: { 
-      name, 
-      year_published: yearPublished, 
-      min_players: minPlayers, 
-      max_players: maxPlayers 
-    },
-  });
-}
+  async createGame(@Arg("name") name: string) {
+    return prisma.game.create({ data: { name } });
+  }
 
-  // Mutation 2: Update game availability
+  // Mutation 2: Delete a game by ID
   @Mutation(() => Game)
-  async updateAvailability(
-    @Arg("id", () => Int) id: number,
-    @Arg("available") available: boolean
-  ) {
-    return prisma.game.update({
-      where: { id },
-      data: { available },
-    });
+  async deleteGame(@Arg("id", () => Int) id: number) {
+    return prisma.game.delete({ where: { id } });
   }
 }
