@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package game;
+
+option go_package = "/generated";
+
+service GameService {
+  rpc GetGame(GetGameRequest) returns (GetGameResponse);
+  rpc ReviewStream(stream ReviewMessage) returns (stream ReviewMessage);
+}
+
+message GetGameRequest {
+  int32 id = 1;
+}
+
+message GetGameResponse {
+  int32 id = 1;
+  string name = 2;
+  string description = 3;
+}
+
+message ReviewMessage {
+  string title = 1;
+  string text = 2;
+  int32 star_amount = 3;
+  int32 user_id = 4;
+  int32 game_id = 5;
+}

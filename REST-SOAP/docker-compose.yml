@@ -1,26 +1,5 @@
 services:
-  si-mysql:
-    build: ../db # reuses existing db/Dockerfile
-    container_name: gameapi-mysql
-    restart: unless-stopped
-    environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-si_db}
-      MYSQL_USER: ${MYSQL_USER:-gameapi}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-gameapi}
-    ports:
-      - "3307:3306"
-    volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - gameapi-net
-
-  si-redis:
+  gameapi-redis:
     image: redis:7-alpine
     container_name: gameapi-redis
     restart: unless-stopped
@@ -39,18 +18,17 @@ services:
     container_name: gameapi
     restart: unless-stopped
     depends_on:
-      si-mysql:
-        condition: service_healthy
-      si-redis:
+      gameapi-redis:
         condition: service_healthy
     environment:
-      # Spring relaxed binding maps these env vars onto application properties
-      SPRING_DATASOURCE_URL: "jdbc:mysql://si-mysql:3306/${MYSQL_DATABASE:-si_db}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SPRING_DATASOURCE_URL: "jdbc:mysql://gameapi-mysql:3306/${MYSQL_DATABASE:-si_db}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
       SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-gameapi}
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-gameapi}
-      SPRING_DATA_REDIS_HOST: si-redis
+      SPRING_DATA_REDIS_HOST: gameapi-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/gameapi"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/gameapi/protocol/openid-connect/certs"
     ports:
       - "8080:8080"
     networks:
@@ -61,4 +39,4 @@ volumes:
 
 networks:
   gameapi-net:
-    driver: bridge
+    external: true
