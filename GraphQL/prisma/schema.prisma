@@ -1,0 +1,176 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model artist {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  dob          DateTime?      @db.Date
+  game_artists game_artists[]
+}
+
+model audit_log {
+  id         BigInt              @id @default(autoincrement())
+  table_name String              @db.VarChar(64)
+  operation  audit_log_operation
+  row_pk     String              @db.VarChar(255)
+  changed_at DateTime            @default(now()) @db.DateTime(0)
+  changed_by String?             @db.VarChar(255)
+  old_data   Json?
+  new_data   Json?
+}
+
+model designer {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(255)
+  dob            DateTime?        @db.Date
+  game_designers game_designers[]
+}
+
+model game {
+  id                Int               @id @default(autoincrement())
+  name              String            @db.VarChar(255)
+  slug              String?           @db.VarChar(255)
+  year_published    Int?              @db.Year
+  bgg_rating        Float?
+  difficulty_rating Float?
+  description       String?           @db.Text
+  playing_time      Int?
+  available         Boolean?
+  min_players       Int?
+  max_players       Int?
+  minimum_age       Int?
+  thumbnail         String?           @db.Text
+  image             String?           @db.Text
+  game_artists      game_artists[]
+  game_designers    game_designers[]
+  game_genres       game_genres[]
+  game_mechanics    game_mechanics[]
+  game_publishers   game_publishers[]
+  review            review[]
+  video             video[]
+}
+
+model game_artists {
+  game_id   Int
+  artist_id Int
+  game      game   @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_artis11592")
+  artist    artist @relation(fields: [artist_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_artis914658")
+
+  @@id([game_id, artist_id])
+  @@index([artist_id], map: "FKgame_artis914658")
+}
+
+model game_designers {
+  game_id     Int
+  designer_id Int
+  designer    designer @relation(fields: [designer_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_desig253052")
+  game        game     @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_desig685981")
+
+  @@id([game_id, designer_id])
+  @@index([designer_id], map: "FKgame_desig253052")
+}
+
+model game_genres {
+  game_id  Int
+  genre_id Int
+  genre    genre @relation(fields: [genre_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_genre12575")
+  game     game  @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_genre659841")
+
+  @@id([game_id, genre_id])
+  @@index([genre_id], map: "FKgame_genre12575")
+}
+
+model game_mechanics {
+  game_id     Int
+  mechanic_id Int
+  game        game     @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_mech1")
+  mechanic    mechanic @relation(fields: [mechanic_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_mech2")
+
+  @@id([game_id, mechanic_id])
+  @@index([mechanic_id], map: "FKgame_mech2")
+}
+
+model game_publishers {
+  game_id      Int
+  publisher_id Int
+  game         game      @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_publi1")
+  publisher    publisher @relation(fields: [publisher_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKgame_publi2")
+
+  @@id([game_id, publisher_id])
+  @@index([publisher_id], map: "FKgame_publi2")
+}
+
+model genre {
+  id          Int           @id @default(autoincrement())
+  name        String        @db.VarChar(255)
+  game_genres game_genres[]
+}
+
+model language {
+  id       Int     @id @default(autoincrement())
+  language String  @db.VarChar(255)
+  video    video[]
+}
+
+model mechanic {
+  id             Int              @id @default(autoincrement())
+  name           String           @db.VarChar(255)
+  game_mechanics game_mechanics[]
+}
+
+model publisher {
+  id              Int               @id @default(autoincrement())
+  name            String            @db.VarChar(255)
+  game_publishers game_publishers[]
+}
+
+model review {
+  id          Int     @id @default(autoincrement())
+  title       String  @db.VarChar(255)
+  text        String? @db.VarChar(255)
+  star_amount Int
+  user_id     Int
+  game_id     Int?
+  game        game?   @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FK_review_game")
+  user        user    @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKreview880296")
+
+  @@index([game_id], map: "FK_review_game")
+  @@index([user_id], map: "FKreview880296")
+}
+
+model user {
+  id           Int       @id @default(autoincrement())
+  display_name String    @unique(map: "display_name") @db.VarChar(55)
+  username     String    @unique(map: "username") @db.VarChar(255)
+  dob          DateTime? @db.Date
+  password     String    @db.VarChar(255)
+  email        String    @db.VarChar(255)
+  is_admin     Boolean   @default(false)
+  review       review[]
+}
+
+model video {
+  id          Int      @id @default(autoincrement())
+  title       String   @db.VarChar(255)
+  category    String?  @db.VarChar(255)
+  link        String   @db.VarChar(255)
+  game_id     Int
+  language_id Int
+  game        game     @relation(fields: [game_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKvideo235072")
+  language    language @relation(fields: [language_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "FKvideo738401")
+
+  @@index([game_id], map: "FKvideo235072")
+  @@index([language_id], map: "FKvideo738401")
+}
+
+enum audit_log_operation {
+  INSERT
+  UPDATE
+  DELETE
+}

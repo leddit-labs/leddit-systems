@@ -1,0 +1,15 @@
+services:
+  graphql-api:
+    build: .
+    container_name: si-graphql
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    environment:
+      DATABASE_URL: mysql://user:PASSWORD@si-mysql:3306/si_db
+    networks:
+      - gameapi-net
+
+networks:
+  gameapi-net:
+    external: true
