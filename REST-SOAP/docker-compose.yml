@@ -21,21 +21,20 @@ services:
       gameapi-redis:
         condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: "jdbc:mysql://gameapi-mysql:3306/${MYSQL_DATABASE:-si_db}?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
-      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER:-gameapi}
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-gameapi}
+      SPRING_DATASOURCE_URL: "jdbc:mysql://gameapi-mysql:3306/si_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
+      SPRING_DATASOURCE_USERNAME: gameapi
+      SPRING_DATASOURCE_PASSWORD: gameapi
       SPRING_DATA_REDIS_HOST: gameapi-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://keycloak:8080/realms/gameapi"
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://keycloak:8080/realms/gameapi/protocol/openid-connect/certs"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://host.docker.internal:8180/realms/gameapi/protocol/openid-connect/certs"
     ports:
       - "8080:8080"
     networks:
       - gameapi-net
 
 volumes:
-  mysql-data:
+  mysql_data:
 
 networks:
   gameapi-net:
