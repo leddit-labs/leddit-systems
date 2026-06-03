@@ -1,222 +1,136 @@
-const apiBaseUrlInput = document.querySelector("#apiBaseUrl");
-const tokenInput = document.querySelector("#token");
-const loadGamesBtn = document.querySelector("#loadGamesBtn");
-const searchForm = document.querySelector("#searchForm");
-const searchInput = document.querySelector("#searchInput");
-const gameForm = document.querySelector("#gameForm");
-const clearFormBtn = document.querySelector("#clearFormBtn");
-const gamesContainer = document.querySelector("#games");
-const statusBox = document.querySelector("#status");
-
-function getApiBaseUrl() {
-  return apiBaseUrlInput.value.replace(/\/$/, "");
-}
-
-function getToken() {
-  return tokenInput.value.trim();
-}
-
-function setStatus(message) {
-  statusBox.textContent = message;
-}
-
-function authHeaders() {
-  const token = getToken();
-
-  if (!token) {
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${token}`,
-  };
-}
-
 async function apiFetch(url, options = {}) {
-  const response = await fetch(url, {
+  const token = document.querySelector("#token").value.trim();
+  const res = await fetch(url, {
     ...options,
     headers: {
       "Content-Type": "application/json",
-      ...authHeaders(),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers || {}),
     },
   });
-
-  if (response.status === 204) {
-    return null;
-  }
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = data?.message || `Request failed with status ${response.status}`;
-    throw new Error(message);
-  }
-
+  if (res.status === 204) return null;
+  const data = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(data?.message || `HTTP ${res.status}`);
   return data;
 }
 
-function getPagedItems(data) {
-  if (!data?._embedded) {
-    return [];
-  }
-
-  const embeddedValues = Object.values(data._embedded);
-  return embeddedValues[0] || [];
+function baseUrl() {
+  return document.querySelector("#apiBaseUrl").value.replace(/\/$/, "");
 }
 
+function status(msg) {
+  document.querySelector("#status").textContent = msg;
+}
+
+function escapeHtml(v) {
+  return String(v)
+    .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+}
+
+// ── Form helpers ────────────────────────────────────────────────────────────
+
 function getFormData() {
+  const val = (id) => { const v = document.querySelector(id).value.trim(); return v || null; };
+  const num = (id) => { const v = val(id); return v == null ? null : Number(v); };
   return {
-    name: valueOrNull("#name"),
-    slug: valueOrNull("#slug"),
-    yearPublished: numberOrNull("#yearPublished"),
-    bggRating: numberOrNull("#bggRating"),
-    difficultyRating: numberOrNull("#difficultyRating"),
-    description: valueOrNull("#description"),
-    playingTime: numberOrNull("#playingTime"),
-    available: document.querySelector("#available").checked,
-    minPlayers: numberOrNull("#minPlayers"),
-    maxPlayers: numberOrNull("#maxPlayers"),
-    minimumAge: numberOrNull("#minimumAge"),
-    thumbnail: valueOrNull("#thumbnail"),
-    image: valueOrNull("#image"),
+    name:             val("#name"),
+    slug:             val("#slug"),
+    yearPublished:    num("#yearPublished"),
+    bggRating:        num("#bggRating"),
+    difficultyRating: num("#difficultyRating"),
+    description:      val("#description"),
+    playingTime:      num("#playingTime"),
+    available:        document.querySelector("#available").checked,
+    minPlayers:       num("#minPlayers"),
+    maxPlayers:       num("#maxPlayers"),
+    minimumAge:       num("#minimumAge"),
+    thumbnail:        val("#thumbnail"),
+    image:            val("#image"),
   };
 }
 
-function valueOrNull(selector) {
-  const value = document.querySelector(selector).value.trim();
-  return value === "" ? null : value;
-}
-
-function numberOrNull(selector) {
-  const value = document.querySelector(selector).value.trim();
-  return value === "" ? null : Number(value);
-}
-
 function clearForm() {
-  gameForm.reset();
+  document.querySelector("#gameForm").reset();
   document.querySelector("#gameId").value = "";
   document.querySelector("#available").checked = true;
 }
 
 function fillForm(game) {
-  document.querySelector("#gameId").value = game.id ?? "";
-  document.querySelector("#name").value = game.name ?? "";
-  document.querySelector("#slug").value = game.slug ?? "";
-  document.querySelector("#yearPublished").value = game.yearPublished ?? "";
-  document.querySelector("#bggRating").value = game.bggRating ?? "";
-  document.querySelector("#difficultyRating").value = game.difficultyRating ?? "";
-  document.querySelector("#description").value = game.description ?? "";
-  document.querySelector("#playingTime").value = game.playingTime ?? "";
+  const set = (id, v) => document.querySelector(id).value = v ?? "";
+  set("#gameId",          game.id);
+  set("#name",            game.name);
+  set("#slug",            game.slug);
+  set("#yearPublished",   game.yearPublished);
+  set("#bggRating",       game.bggRating);
+  set("#difficultyRating",game.difficultyRating);
+  set("#description",     game.description);
+  set("#playingTime",     game.playingTime);
+  set("#minPlayers",      game.minPlayers);
+  set("#maxPlayers",      game.maxPlayers);
+  set("#minimumAge",      game.minimumAge);
+  set("#thumbnail",       game.thumbnail);
+  set("#image",           game.image);
   document.querySelector("#available").checked = Boolean(game.available);
-  document.querySelector("#minPlayers").value = game.minPlayers ?? "";
-  document.querySelector("#maxPlayers").value = game.maxPlayers ?? "";
-  document.querySelector("#minimumAge").value = game.minimumAge ?? "";
-  document.querySelector("#thumbnail").value = game.thumbnail ?? "";
-  document.querySelector("#image").value = game.image ?? "";
-
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+// ── API actions ──────────────────────────────────────────────────────────────
+
 async function loadGames(search = "") {
   try {
-    const url = new URL(getApiBaseUrl());
-
-    if (search) {
-      url.searchParams.set("search", search);
-    }
-
+    const url = new URL(baseUrl());
+    if (search) url.searchParams.set("search", search);
     const data = await apiFetch(url.toString());
-    const games = getPagedItems(data);
-
-    renderGames(games);
-    setStatus(`Loaded ${games.length} games.`);
-  } catch (error) {
-    setStatus(error.message);
-  }
+    const embedded = data?._embedded ? Object.values(data._embedded)[0] ?? [] : [];
+    renderGames(embedded);
+    status(`Loaded ${embedded.length} games.`);
+  } catch (e) { status(e.message); }
 }
 
-async function loadSingleGame(selfHref) {
-  try {
-    const game = await apiFetch(selfHref);
-    fillForm(game);
-    setStatus(`Loaded game ${game.id} into form.`);
-  } catch (error) {
-    setStatus(error.message);
-  }
-}
-
-async function saveGame(event) {
-  event.preventDefault();
-
+async function saveGame(e) {
+  e.preventDefault();
   try {
     const id = document.querySelector("#gameId").value;
-    const body = getFormData();
-
-    const url = id ? `${getApiBaseUrl()}/${id}` : getApiBaseUrl();
-    const method = id ? "PUT" : "POST";
-
-    await apiFetch(url, {
-      method,
-      body: JSON.stringify(body),
+    await apiFetch(id ? `${baseUrl()}/${id}` : baseUrl(), {
+      method: id ? "PUT" : "POST",
+      body: JSON.stringify(getFormData()),
     });
-
     clearForm();
     await loadGames();
-
-    setStatus(id ? "Game updated." : "Game created.");
-  } catch (error) {
-    setStatus(error.message);
-  }
+    status(id ? "Game updated." : "Game created.");
+  } catch (e) { status(e.message); }
 }
 
 async function deleteGame(game) {
-  const deleteHref = game._links?.delete?.href;
-
-  if (!deleteHref) {
-    setStatus("No delete link available. Are you authenticated?");
-    return;
-  }
-
-  const confirmed = confirm(`Delete "${game.name}"?`);
-
-  if (!confirmed) {
-    return;
-  }
-
+  if (!game._links?.delete?.href) { status("No delete link. Are you authenticated?"); return; }
+  if (!confirm(`Delete "${game.name}"?`)) return;
   try {
-    await apiFetch(deleteHref, {
-      method: "DELETE",
-    });
-
+    await apiFetch(game._links.delete.href, { method: "DELETE" });
     await loadGames();
-    setStatus("Game deleted.");
-  } catch (error) {
-    setStatus(error.message);
-  }
+    status("Game deleted.");
+  } catch (e) { status(e.message); }
 }
 
-function renderGames(games) {
-  gamesContainer.innerHTML = "";
+// ── Rendering ────────────────────────────────────────────────────────────────
 
-  if (games.length === 0) {
-    gamesContainer.textContent = "No games found.";
-    return;
-  }
+function renderGames(games) {
+  const container = document.querySelector("#games");
+  container.innerHTML = "";
+
+  if (!games.length) { container.textContent = "No games found."; return; }
 
   for (const game of games) {
     const card = document.createElement("article");
     card.className = "game-card";
-
-    const imageUrl = game.thumbnail || game.image;
-
+    const img = game.thumbnail || game.image;
     card.innerHTML = `
-      ${imageUrl ? `<img src="${escapeHtml(imageUrl)}" alt="">` : ""}
+      ${img ? `<img src="${escapeHtml(img)}" alt="">` : ""}
       <h3>${escapeHtml(game.name || "Unnamed game")}</h3>
       <p><strong>ID:</strong> ${game.id}</p>
       <p><strong>Year:</strong> ${game.yearPublished ?? "Unknown"}</p>
-      <p><strong>Players:</strong> ${game.minPlayers ?? "?"} - ${game.maxPlayers ?? "?"}</p>
-      <p><strong>Playing time:</strong> ${game.playingTime ?? "?"} minutes</p>
+      <p><strong>Players:</strong> ${game.minPlayers ?? "?"} – ${game.maxPlayers ?? "?"}</p>
+      <p><strong>Playing time:</strong> ${game.playingTime ?? "?"} min</p>
       <p><strong>Available:</strong> ${game.available ? "Yes" : "No"}</p>
       <p>${escapeHtml(game.description || "")}</p>
       <div class="game-actions"></div>
@@ -224,50 +138,40 @@ function renderGames(games) {
 
     const actions = card.querySelector(".game-actions");
 
-    const viewButton = document.createElement("button");
-    viewButton.textContent = "View / edit";
-    viewButton.className = "secondary";
-    viewButton.addEventListener("click", () => {
-      const selfHref = game._links?.self?.href;
-
-      if (selfHref) {
-        loadSingleGame(selfHref);
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "View / edit";
+    editBtn.className = "secondary";
+    editBtn.onclick = async () => {
+      const href = game._links?.self?.href;
+      if (href) {
+        try { fillForm(await apiFetch(href)); status(`Loaded game ${game.id}.`); }
+        catch (e) { status(e.message); }
       } else {
         fillForm(game);
       }
-    });
-
-    actions.appendChild(viewButton);
+    };
+    actions.appendChild(editBtn);
 
     if (game._links?.delete?.href) {
-      const deleteButton = document.createElement("button");
-      deleteButton.textContent = "Delete";
-      deleteButton.className = "danger";
-      deleteButton.addEventListener("click", () => deleteGame(game));
-      actions.appendChild(deleteButton);
+      const delBtn = document.createElement("button");
+      delBtn.textContent = "Delete";
+      delBtn.className = "danger";
+      delBtn.onclick = () => deleteGame(game);
+      actions.appendChild(delBtn);
     }
 
-    gamesContainer.appendChild(card);
+    container.appendChild(card);
   }
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
+// ── Event listeners ──────────────────────────────────────────────────────────
 
-loadGamesBtn.addEventListener("click", () => loadGames());
-
-searchForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  loadGames(searchInput.value.trim());
+document.querySelector("#loadGamesBtn").addEventListener("click", () => loadGames());
+document.querySelector("#searchForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  loadGames(document.querySelector("#searchInput").value.trim());
 });
-
-gameForm.addEventListener("submit", saveGame);
-clearFormBtn.addEventListener("click", clearForm);
+document.querySelector("#gameForm").addEventListener("submit", saveGame);
+document.querySelector("#clearFormBtn").addEventListener("click", clearForm);
 
 loadGames();
