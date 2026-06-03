@@ -33,6 +33,15 @@ public class SecurityConfig {
         return source;
     }
 
+    @Bean
+    @Order(0)
+    public SecurityFilterChain soapFilterChain(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/ws/**")
+            .csrf(csrf -> csrf.disable())
+            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    return http.build();
+    }
 
     @Bean
     @Order(1)
