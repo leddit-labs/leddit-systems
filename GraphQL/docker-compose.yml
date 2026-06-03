@@ -1,0 +1,15 @@
+services:
+  graphql-api:
+    build: .
+    container_name: si-graphql
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    networks:
+      - gameapi-net
+
+networks:
+  gameapi-net:
+    external: true
