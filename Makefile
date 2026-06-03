@@ -21,15 +21,19 @@ websocket-up: network
 	cd websocket && docker compose up -d --build
 
 graphql-up: network
-	cd graphql && docker compose up -d --build
+	cd GraphQL && docker compose up -d --build
 
-up: keycloak-up db-up game-up grpc-up websocket-up graphql-up
+frontend-up: network
+	cd REST-SOAP/frontend && docker compose up -d --build
+
+up: keycloak-up db-up game-up grpc-up websocket-up graphql-up frontend-up
 
 down:
 	cd REST-SOAP && docker compose down
-	cd db && docker compose down
 	cd REST-SOAP/keycloak && docker compose down
+	cd REST-SOAP/frontend && docker compose down
+	cd db && docker compose down
 	cd gRPC && docker compose down
 	cd websocket && docker compose down
-	cd graphql && docker compose down
+	cd GraphQL && docker compose down
 
