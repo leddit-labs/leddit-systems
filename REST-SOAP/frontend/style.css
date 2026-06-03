@@ -1,0 +1,105 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, sans-serif;
+  background: #f5f5f5;
+  color: #222;
+}
+
+main {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+h1,
+h2 {
+  margin-top: 0;
+}
+
+.panel {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+input,
+textarea,
+button {
+  width: 100%;
+  font: inherit;
+  padding: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+textarea {
+  min-height: 80px;
+}
+
+button {
+  cursor: pointer;
+  border: 0;
+  border-radius: 6px;
+  background: #222;
+  color: white;
+  margin-top: 0.5rem;
+}
+
+button.secondary {
+  background: #666;
+}
+
+button.danger {
+  background: #9b1c1c;
+}
+
+.checkbox {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.checkbox input {
+  width: auto;
+}
+
+.buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.game-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: #fafafa;
+}
+
+.game-card img {
+  max-width: 160px;
+  display: block;
+  margin-bottom: 0.75rem;
+  border-radius: 6px;
+}
+
+.game-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+pre {
+  white-space: pre-wrap;
+}

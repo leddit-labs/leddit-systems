@@ -1,0 +1,662 @@
+{
+  "info": {
+    "_postman_id": "a92d8ace-c4a4-403f-aad9-3745cd48bd6a",
+    "name": "GameAPI REST Collection",
+    "description": "Complete REST API testing with OAuth2 authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "53855432",
+    "_collection_link": "https://go.postman.co/collection/53855432-a92d8ace-c4a4-403f-aad9-3745cd48bd6a?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Get Access Token (Password Grant)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set(\"access_token\", response.access_token);",
+                  "    pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+                  "    pm.test(\"Access token obtained\", function() {",
+                  "        pm.expect(pm.environment.get(\"access_token\")).to.not.be.empty;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "gameapi-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "dev-secret-2024",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{test_username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{test_password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid email profile roles",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/userinfo",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "userinfo"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200 || pm.response.code === 204) {",
+                  "    pm.environment.unset(\"access_token\");",
+                  "    pm.environment.unset(\"refresh_token\");",
+                  "    pm.test(\"Logged out successfully\", function() {",
+                  "        pm.expect(true).to.be.true;",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Read Operations",
+      "item": [
+        {
+          "name": "Get All Games with Search and Pagination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games?search={{search_term}}&page=0&size=5&sort=name,asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{search_term}}"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                },
+                {
+                  "key": "sort",
+                  "value": "name,asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Available Games",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/available?page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "available"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Game by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Read Operations - Negative Tests",
+      "item": [
+        {
+          "name": "Get Game by ID - Not Found (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Write Operations",
+      "item": [
+        {
+          "name": "Create New Game (POST)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var token = pm.collectionVariables.get(\"access_token\");",
+                  "if (!token) {",
+                  "    console.error(\"No access token found! Run 'Get Access Token' first.\");",
+                  "} else {",
+                  "    console.log(\"Using token:\", token.substring(0, 50) + \"...\");",
+                  "    pm.request.headers.add({",
+                  "        key: \"Authorization\",",
+                  "        value: \"Bearer \" + token",
+                  "    });",
+                  "}",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var game = pm.response.json();",
+                  "    pm.environment.set(\"new_game_id\", game.id);",
+                  "    pm.test(\"Game created\", function() {",
+                  "        pm.expect(game.name).to.equal(pm.variables.get(\"game_name\"));",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{game_name}}\",\n  \"slug\": \"{{game_slug}}\",\n  \"yearPublished\": {{year_published}},\n  \"bggRating\": {{bgg_rating}},\n  \"difficultyRating\": {{difficulty_rating}},\n  \"description\": \"{{game_description}}\",\n  \"playingTime\": {{playing_time}},\n  \"available\": true,\n  \"minPlayers\": {{min_players}},\n  \"maxPlayers\": {{max_players}},\n  \"minimumAge\": {{min_age}},\n  \"thumbnail\": \"{{thumbnail_url}}\",\n  \"image\": \"{{image_url}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Game (PUT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Game updated\", function() {",
+                  "    pm.expect(pm.response.code).to.equal(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{updated_game_name}}\",\n  \"slug\": \"{{updated_game_slug}}\",\n  \"yearPublished\": 2023,\n  \"bggRating\": 4.5,\n  \"difficultyRating\": 3.2,\n  \"description\": \"Updated description\",\n  \"playingTime\": 90,\n  \"available\": true,\n  \"minPlayers\": 2,\n  \"maxPlayers\": 6,\n  \"minimumAge\": 12,\n  \"thumbnail\": \"https://example.com/updated-thumb.jpg\",\n  \"image\": \"https://example.com/updated-image.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameIdToUpdate}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameIdToUpdate}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Write Operations - Negative Tests",
+      "item": [
+        {
+          "name": "Create Game - Invalid Data (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"playingTime\": -5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Game - Not Found (404)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Game\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Game - Not Found (404)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OpenAPI Documentation",
+      "item": [
+        {
+          "name": "Get OpenAPI JSON Spec",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/v3/api-docs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v3",
+                "api-docs"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Open Swagger UI",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "packages": {},
+        "requests": {},
+        "exec": [
+          ""
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "keycloakUrl",
+      "value": "http://localhost:8180"
+    },
+    {
+      "key": "realm",
+      "value": "gameapi"
+    },
+    {
+      "key": "test_username",
+      "value": "testuser"
+    },
+    {
+      "key": "test_password",
+      "value": "testpass123"
+    },
+    {
+      "key": "gameId",
+      "value": "1"
+    },
+    {
+      "key": "gameIdToUpdate",
+      "value": "1"
+    },
+    {
+      "key": "gameIdToDelete",
+      "value": "2"
+    },
+    {
+      "key": "search_term",
+      "value": "game"
+    },
+    {
+      "key": "game_name",
+      "value": "Test Game"
+    },
+    {
+      "key": "updated_game_name",
+      "value": "Updated Test Game"
+    },
+    {
+      "key": "game_slug",
+      "value": "test-game"
+    },
+    {
+      "key": "updated_game_slug",
+      "value": "updated-test-game"
+    },
+    {
+      "key": "year_published",
+      "value": "2024"
+    },
+    {
+      "key": "bgg_rating",
+      "value": "4.2"
+    },
+    {
+      "key": "difficulty_rating",
+      "value": "2.5"
+    },
+    {
+      "key": "game_description",
+      "value": "A test game created via Postman API"
+    },
+    {
+      "key": "playing_time",
+      "value": "60"
+    },
+    {
+      "key": "min_players",
+      "value": "1"
+    },
+    {
+      "key": "max_players",
+      "value": "4"
+    },
+    {
+      "key": "min_age",
+      "value": "8"
+    },
+    {
+      "key": "thumbnail_url",
+      "value": "https://example.com/thumbnail.jpg"
+    },
+    {
+      "key": "image_url",
+      "value": "https://example.com/image.jpg"
+    },
+    {
+      "key": "new_game_id",
+      "value": ""
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    }
+  ]
+}
