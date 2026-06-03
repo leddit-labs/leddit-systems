@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: websocket-app
+    ports:
+      - "8081:8081"
+    networks:
+      - gameapi-net
+
+networks:
+  gameapi-net:
+    external: true

@@ -15,13 +15,17 @@ grpc-up: network
 	cd gRPC && docker compose up -d --build
 
 keycloak-up: network
-	cd REST-SOAP/keycloak && docker compose up
+	cd REST-SOAP/keycloak && docker compose up -d
 
-up: keycloak-up db-up game-up grpc-up
+websocket-up: network
+	cd websocket && docker compose up -d --build
+
+up: keycloak-up db-up game-up grpc-up websocket-up
 
 down:
 	cd REST-SOAP && docker compose down
 	cd db && docker compose down
 	cd REST-SOAP/keycloak && docker compose down
 	cd gRPC && docker compose down
+	cd websocket && docker compose down
 
