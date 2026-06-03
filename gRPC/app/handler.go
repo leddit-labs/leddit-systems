@@ -32,7 +32,6 @@ func NewGameHandler(
 
 
 //unary RPC
-
 func (s *GameHandler) GetGame(
 	ctx context.Context,
 	req *pb.GetGameRequest,
@@ -50,7 +49,7 @@ func (s *GameHandler) GetGame(
 		&game.Description,
 	)
 
-	// no game found
+	//no game found
 	if err == sql.ErrNoRows {
 
 		return nil, status.Error(
@@ -71,7 +70,7 @@ func (s *GameHandler) GetGame(
 	return &game, nil
 }
 
-// Bidirectional stream
+//Bidirectional stream
 func (gamehandler *GameHandler) ReviewStream(
 	stream pb.GameService_ReviewStreamServer,
 ) error {
@@ -80,7 +79,7 @@ func (gamehandler *GameHandler) ReviewStream(
 
 	log.Println("Client connected")
 
-	// cleanup on disconnect
+	//cleanup on disconnect
 	defer func() {
 
 		gamehandler.broadcaster.RemoveClient(stream)
@@ -106,14 +105,14 @@ func (gamehandler *GameHandler) ReviewStream(
 			)
 		}
 
-		// validate review
+		//validate review
 		err = ValidateReview(msg)
 
 		if err != nil {
 			return err
 		}
 
-		// save review
+		//save review
 		_, err = gamehandler.db.Exec(`
 			INSERT INTO review (
 				title,

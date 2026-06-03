@@ -25,7 +25,7 @@ func NewBroadcaster() *Broadcaster {
 }
 
 
-// Register new client
+//register new clients
 func (b *Broadcaster) AddClient(
 	stream pb.GameService_ReviewStreamServer,
 ) {
