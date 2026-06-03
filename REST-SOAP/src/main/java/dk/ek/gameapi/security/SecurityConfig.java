@@ -49,7 +49,7 @@ public class SecurityConfig {
     @Bean
     public JwtDecoder jwtDecoder() throws Exception {
         // Using the custom decoder that doesnt validate issuer
-        return new CustomJwtDecoder("http://host.docker.internal:8180/realms/gameapi/protocol/openid-connect/certs");
+        return new CustomJwtDecoder("http://gameapi-keycloak:8080/realms/gameapi/protocol/openid-connect/certs");
     }
 
     @Bean

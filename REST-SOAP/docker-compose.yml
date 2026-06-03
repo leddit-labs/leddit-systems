@@ -27,7 +27,7 @@ services:
       SPRING_DATA_REDIS_HOST: gameapi-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
-      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://host.docker.internal:8180/realms/gameapi/protocol/openid-connect/certs"
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://gameapi-keycloak:8080/realms/gameapi/protocol/openid-connect/certs"
     ports:
       - "8080:8080"
     networks:
