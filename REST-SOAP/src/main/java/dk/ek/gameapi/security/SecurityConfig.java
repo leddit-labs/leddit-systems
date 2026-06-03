@@ -7,7 +7,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
@@ -36,6 +35,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/auth/debug").permitAll()
                         .requestMatchers("/api/v1/auth/logout").authenticated()
                         .anyRequest().authenticated()
                 )
@@ -44,6 +44,12 @@ public class SecurityConfig {
                 ));
 
         return http.build();
+    }
+
+    @Bean
+    public JwtDecoder jwtDecoder() throws Exception {
+        // Using the custom decoder that doesnt validate issuer
+        return new CustomJwtDecoder("http://host.docker.internal:8180/realms/gameapi/protocol/openid-connect/certs");
     }
 
     @Bean
