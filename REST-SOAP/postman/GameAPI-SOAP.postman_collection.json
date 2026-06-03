@@ -1,0 +1,135 @@
+{
+  "info": {
+    "name": "Game SOAP API",
+    "description": "SOAP test suite for the Game service (Spring-WS). Positive and negative cases, including both faults. Set the collection variable baseUrl if your server is not on localhost:8080.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" }
+  ],
+  "item": [
+    {
+      "name": "WSDL is generated (GET)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('200 OK', () => pm.response.to.have.status(200));",
+          "pm.test('Looks like a WSDL', () => pm.expect(pm.response.text()).to.include('wsdl:definitions'));",
+          "pm.test('Advertises the service namespace', () => pm.expect(pm.response.text()).to.include('http://gameapi.ek.dk/soap'));"
+        ] } }
+      ],
+      "request": {
+        "method": "GET", "header": [],
+        "url": { "raw": "{{baseUrl}}/ws/games.wsdl", "host": ["{{baseUrl}}"], "path": ["ws", "games.wsdl"] }
+      }
+    },
+    {
+      "name": "READ getAllGames (positive)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('200 OK', () => pm.response.to.have.status(200));",
+          "pm.test('Returns a response payload', () => pm.expect(pm.response.text()).to.include('getAllGamesResponse'));",
+          "pm.test('Includes totalElements', () => pm.expect(pm.response.text()).to.include('totalElements'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:getAllGamesRequest>\n      <gs:page>0</gs:page>\n      <gs:size>5</gs:size>\n    </gs:getAllGamesRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "READ getGameById (positive)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('200 OK', () => pm.response.to.have.status(200));",
+          "pm.test('Returns a game', () => pm.expect(pm.response.text()).to.include('getGameByIdResponse'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:getGameByIdRequest>\n      <gs:id>1</gs:id>\n    </gs:getGameByIdRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "FAULT getGameById not found (negative)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('SOAP 1.1 fault returns HTTP 500', () => pm.response.to.have.status(500));",
+          "pm.test('Body is a SOAP Fault', () => pm.expect(pm.response.text()).to.include('Fault'));",
+          "pm.test('Faultstring is Game not found', () => pm.expect(pm.response.text()).to.include('Game not found'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:getGameByIdRequest>\n      <gs:id>999999</gs:id>\n    </gs:getGameByIdRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "WRITE createGame (positive)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('200 OK', () => pm.response.to.have.status(200));",
+          "pm.test('Returns created game', () => pm.expect(pm.response.text()).to.include('createGameResponse'));",
+          "pm.test('Created game has an id', () => pm.expect(pm.response.text()).to.match(/<[^>]*id>\\d+<\\/[^>]*id>/));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:createGameRequest>\n      <gs:game>\n        <gs:name>SOAP Test Game</gs:name>\n        <gs:yearPublished>2024</gs:yearPublished>\n        <gs:available>true</gs:available>\n        <gs:minPlayers>2</gs:minPlayers>\n        <gs:maxPlayers>4</gs:maxPlayers>\n      </gs:game>\n    </gs:createGameRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "FAULT createGame missing name (negative)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('SOAP 1.1 fault returns HTTP 500', () => pm.response.to.have.status(500));",
+          "pm.test('Body is a SOAP Fault', () => pm.expect(pm.response.text()).to.include('Fault'));",
+          "pm.test('Faultstring is Invalid request', () => pm.expect(pm.response.text()).to.include('Invalid request'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:createGameRequest>\n      <gs:game>\n        <gs:name></gs:name>\n        <gs:yearPublished>2024</gs:yearPublished>\n      </gs:game>\n    </gs:createGameRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "WRITE updateGame (positive)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('200 OK', () => pm.response.to.have.status(200));",
+          "pm.test('Returns updated game', () => pm.expect(pm.response.text()).to.include('updateGameResponse'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:updateGameRequest>\n      <gs:id>1</gs:id>\n      <gs:game>\n        <gs:name>Updated via SOAP</gs:name>\n        <gs:available>false</gs:available>\n      </gs:game>\n    </gs:updateGameRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    },
+    {
+      "name": "FAULT deleteGame not found (negative)",
+      "event": [
+        { "listen": "test", "script": { "type": "text/javascript", "exec": [
+          "pm.test('SOAP 1.1 fault returns HTTP 500', () => pm.response.to.have.status(500));",
+          "pm.test('Faultstring is Game not found', () => pm.expect(pm.response.text()).to.include('Game not found'));"
+        ] } }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "text/xml" }],
+        "body": { "mode": "raw", "raw": "<soapenv:Envelope xmlns:soapenv=\"http://schemas.xmlsoap.org/soap/envelope/\" xmlns:gs=\"http://gameapi.ek.dk/soap\">\n  <soapenv:Body>\n    <gs:deleteGameRequest>\n      <gs:id>999999</gs:id>\n    </gs:deleteGameRequest>\n  </soapenv:Body>\n</soapenv:Envelope>" },
+        "url": { "raw": "{{baseUrl}}/ws", "host": ["{{baseUrl}}"], "path": ["ws"] }
+      }
+    }
+  ]
+}
