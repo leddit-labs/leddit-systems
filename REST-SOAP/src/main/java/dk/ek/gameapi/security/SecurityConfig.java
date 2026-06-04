@@ -1,8 +1,10 @@
 package dk.ek.gameapi.security;
 
+import dk.ek.gameapi.filter.TokenRevocationFilter;
+import dk.ek.gameapi.service.TokenRevocationService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -10,75 +12,50 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-
-import java.util.List;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:5500"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+    private final TokenRevocationService tokenRevocationService;
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
-        return source;
+    public SecurityConfig(TokenRevocationService tokenRevocationService) {
+        this.tokenRevocationService = tokenRevocationService;
     }
 
     @Bean
-    @Order(0)
-    public SecurityFilterChain soapFilterChain(HttpSecurity http) throws Exception {
-        http
-            .securityMatcher("/ws/**")
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-    return http.build();
+    public TokenRevocationFilter tokenRevocationFilter() {
+        return new TokenRevocationFilter(tokenRevocationService);
     }
 
     @Bean
-    @Order(1)
-    public SecurityFilterChain publicReadFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/api/v1/games", "/api/v1/games/available", "/api/v1/games/search/**", "/api/v1/games/{id}")
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                );
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
-    public SecurityFilterChain protectedWriteFilterChain(HttpSecurity http) throws Exception {
-        http
-                .securityMatcher("/api/v1/games/**", "/api/v1/auth/**")
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/debug").permitAll()
-                        .requestMatchers("/api/v1/auth/logout").authenticated()
+                        // Public GET endpoints for games
+                        .requestMatchers(HttpMethod.GET, "/api/v1/games", "/api/v1/games/**", "/api/v1/games/available", "/api/v1/games/search/**").permitAll()
+                        // Swagger UI - public
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
+                        // SOAP - public
+                        .requestMatchers("/ws/**").permitAll()
+                        // Debug endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/debug", "/api/v1/auth/validate").permitAll()
+                        // All other requests (POST, PUT, DELETE) require authentication
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(
                         jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
-                ));
+                ))
+                .addFilterAfter(tokenRevocationFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
     @Bean
     public JwtDecoder jwtDecoder() throws Exception {
-        // Using the custom decoder that doesnt validate issuer
         return new CustomJwtDecoder("http://gameapi-keycloak:8080/realms/gameapi/protocol/openid-connect/certs");
     }
 
