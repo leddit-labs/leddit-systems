@@ -100,12 +100,15 @@ public class GameController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(summary = "Create new game - Requires login")
-    @SecurityRequirement(name = "bearer-auth")
     public ResponseEntity<EntityModel<GameResponse>> createGame(
             @Valid @RequestBody GameRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = jwt != null ? jwt.getClaimAsString("sub") : "anonymous";
+        String userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            userId = jwt.getClaimAsString("sub");
+        }
+
         GameResponse created = gameService.createGame(request, userId);
 
         return ResponseEntity
@@ -116,13 +119,16 @@ public class GameController {
     // PUT - Requires authentication
     @PutMapping("/{id}")
     @Operation(summary = "Update game - Requires login")
-    @SecurityRequirement(name = "bearer-auth")
     public ResponseEntity<EntityModel<GameResponse>> updateGame(
             @PathVariable Integer id,
             @Valid @RequestBody GameRequest request,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = jwt != null ? jwt.getClaimAsString("sub") : "anonymous";
+        String userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            userId = jwt.getClaimAsString("sub");
+        }
+
         return ResponseEntity.ok(addLinksToGame(gameService.updateGame(id, request, userId), true));
     }
 
@@ -130,12 +136,15 @@ public class GameController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Operation(summary = "Delete game - Requires login")
-    @SecurityRequirement(name = "bearer-auth")
     public ResponseEntity<Void> deleteGame(
             @PathVariable Integer id,
-            @AuthenticationPrincipal Jwt jwt) {
+            Authentication authentication) {
 
-        String userId = jwt != null ? jwt.getClaimAsString("sub") : "anonymous";
+        String userId = null;
+        if (authentication != null && authentication.getPrincipal() instanceof Jwt jwt) {
+            userId = jwt.getClaimAsString("sub");
+        }
+
         gameService.deleteGame(id, userId);
         return ResponseEntity.noContent().build();
     }
