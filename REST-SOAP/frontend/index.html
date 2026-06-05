@@ -9,124 +9,129 @@
 </head>
 
 <body>
-  <main>
-    <h1>Games</h1>
+<main>
+  <h1>Games</h1>
 
-    <section class="panel">
-      <h2>API settings</h2>
+  <section class="panel">
+    <h2>API settings</h2>
+
+    <label>
+      API base URL
+      <input id="apiBaseUrl" value="http://localhost:8080/api/v1/games" />
+    </label>
+
+    <label>
+      JWT token
+      <textarea id="token" placeholder="Paste Bearer token here"></textarea>
+    </label>
+
+    <div style="display: flex; gap: 10px; margin: 10px 0;">
+      <button id="keycloakLoginBtn" style="background-color: #4CAF50; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer;">Login with Keycloak</button>
+      <button id="logoutBtn" style="background-color: #f44336; color: white; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;">Logout</button>
+    </div>
+
+    <button id="loadGamesBtn">Load games</button>
+  </section>
+
+  <section class="panel">
+    <h2>Search</h2>
+
+    <form id="searchForm">
+      <input id="searchInput" placeholder="Search by name" />
+      <button type="submit">Search</button>
+    </form>
+  </section>
+
+  <section class="panel">
+    <h2>Create / edit game</h2>
+
+    <form id="gameForm">
+      <input type="hidden" id="gameId" />
 
       <label>
-        API base URL
-        <input id="apiBaseUrl" value="http://localhost:8080/api/v1/games" />
+        Name *
+        <input id="name" required />
       </label>
 
       <label>
-        JWT token
-        <textarea id="token" placeholder="Paste Bearer token here"></textarea>
+        Slug
+        <input id="slug" />
       </label>
 
-      <button id="loadGamesBtn">Load games</button>
-    </section>
+      <label>
+        Year published
+        <input id="yearPublished" type="number" min="0" />
+      </label>
 
-    <section class="panel">
-      <h2>Search</h2>
+      <label>
+        BGG rating
+        <input id="bggRating" type="number" min="0" step="0.1" />
+      </label>
 
-      <form id="searchForm">
-        <input id="searchInput" placeholder="Search by name" />
-        <button type="submit">Search</button>
-      </form>
-    </section>
+      <label>
+        Difficulty rating
+        <input id="difficultyRating" type="number" min="0" step="0.1" />
+      </label>
 
-    <section class="panel">
-      <h2>Create / edit game</h2>
+      <label>
+        Playing time
+        <input id="playingTime" type="number" min="1" />
+      </label>
 
-      <form id="gameForm">
-        <input type="hidden" id="gameId" />
+      <label>
+        Min players
+        <input id="minPlayers" type="number" min="1" />
+      </label>
 
-        <label>
-          Name *
-          <input id="name" required />
-        </label>
+      <label>
+        Max players
+        <input id="maxPlayers" type="number" min="1" />
+      </label>
 
-        <label>
-          Slug
-          <input id="slug" />
-        </label>
+      <label>
+        Minimum age
+        <input id="minimumAge" type="number" min="1" />
+      </label>
 
-        <label>
-          Year published
-          <input id="yearPublished" type="number" min="0" />
-        </label>
+      <label>
+        Thumbnail URL
+        <input id="thumbnail" />
+      </label>
 
-        <label>
-          BGG rating
-          <input id="bggRating" type="number" min="0" step="0.1" />
-        </label>
+      <label>
+        Image URL
+        <input id="image" />
+      </label>
 
-        <label>
-          Difficulty rating
-          <input id="difficultyRating" type="number" min="0" step="0.1" />
-        </label>
+      <label>
+        Description
+        <textarea id="description"></textarea>
+      </label>
 
-        <label>
-          Playing time
-          <input id="playingTime" type="number" min="1" />
-        </label>
+      <label class="checkbox">
+        <input id="available" type="checkbox" checked />
+        Available
+      </label>
 
-        <label>
-          Min players
-          <input id="minPlayers" type="number" min="1" />
-        </label>
+      <div class="buttons">
+        <button type="submit">Save</button>
+        <button type="button" id="clearFormBtn">Clear</button>
+      </div>
+    </form>
+  </section>
 
-        <label>
-          Max players
-          <input id="maxPlayers" type="number" min="1" />
-        </label>
+  <section class="panel">
+    <h2>Status</h2>
+    <pre id="status">Ready.</pre>
+  </section>
 
-        <label>
-          Minimum age
-          <input id="minimumAge" type="number" min="1" />
-        </label>
+  <section class="panel">
+    <h2>Game list</h2>
+    <div id="games"></div>
+  </section>
+</main>
 
-        <label>
-          Thumbnail URL
-          <input id="thumbnail" />
-        </label>
-
-        <label>
-          Image URL
-          <input id="image" />
-        </label>
-
-        <label>
-          Description
-          <textarea id="description"></textarea>
-        </label>
-
-        <label class="checkbox">
-          <input id="available" type="checkbox" checked />
-          Available
-        </label>
-
-        <div class="buttons">
-          <button type="submit">Save</button>
-          <button type="button" id="clearFormBtn">Clear</button>
-        </div>
-      </form>
-    </section>
-
-    <section class="panel">
-      <h2>Status</h2>
-      <pre id="status">Ready.</pre>
-    </section>
-
-    <section class="panel">
-      <h2>Game list</h2>
-      <div id="games"></div>
-    </section>
-  </main>
-
-  <script src="app.js"></script>
+<script src="app.js"></script>
 </body>
 
 </html>
