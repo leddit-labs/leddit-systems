@@ -36,8 +36,23 @@ resource "keycloak_openid_client" "gameapi_client" {
   standard_flow_enabled        = true
   direct_access_grants_enabled = true
 
-  valid_redirect_uris = ["http://localhost:*", "http://localhost:8080/*", "http://localhost:3000/*"]
-  web_origins         = ["http://localhost:8080", "http://localhost:3000", "http://localhost:8180"]
+valid_redirect_uris = [
+    "http://localhost:8080/*",
+    "http://localhost:3000/*",
+    "http://localhost:5500",
+    "http://localhost:5500/*",
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:5500/*",
+    "http://localhost:8080",
+    "http://localhost:3000"
+]
+web_origins = [
+    "http://localhost:8080",
+    "http://localhost:3000",
+    "http://localhost:5500",
+    "http://127.0.0.1:5500",
+    "http://localhost:8180"
+]
 }
 
 # Role

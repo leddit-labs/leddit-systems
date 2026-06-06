@@ -20,12 +20,13 @@ function baseUrl() {
 
 function status(msg) {
   document.querySelector("#status").textContent = msg;
+  console.log("Status:", msg);
 }
 
 function escapeHtml(v) {
   return String(v)
-    .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#039;");
 }
 
 // ── Form helpers ────────────────────────────────────────────────────────────
@@ -164,14 +165,154 @@ function renderGames(games) {
   }
 }
 
+// ── Keycloak Authentication ────────────────────────────────────────────────────
+
+const KEYCLOAK_URL = "http://localhost:8180";
+const REALM = "gameapi";
+const CLIENT_ID = "gameapi-client";
+const REDIRECT_URI = window.location.origin; // http://localhost:5500
+
+console.log("Redirect URI:", REDIRECT_URI);
+
+async function checkForOAuthCallback() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const code = urlParams.get("code");
+
+  console.log("Checking for OAuth callback, code present:", !!code);
+
+  if (code) {
+    status("Exchanging code for token...");
+
+    try {
+      const response = await fetch(`${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          client_id: CLIENT_ID,
+          client_secret: "dev-secret-2024",
+          grant_type: "authorization_code",
+          code: code,
+          redirect_uri: REDIRECT_URI
+        })
+      });
+
+      console.log("Token response status:", response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Token exchange error:", errorText);
+        throw new Error(`Token exchange failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log("Token received, expires in:", data.expires_in);
+
+      document.querySelector("#token").value = data.access_token;
+      localStorage.setItem("gameapi_token", data.access_token);
+
+      // Update UI
+      document.querySelector("#keycloakLoginBtn").style.display = "none";
+      document.querySelector("#logoutBtn").style.display = "inline-block";
+      status(`Logged in! Token expires in ${data.expires_in} seconds.`);
+
+      // Remove code from URL
+      window.history.replaceState({}, document.title, window.location.pathname);
+
+      // Load games with new token
+      await loadGames();
+    } catch (e) {
+      console.error("Login error:", e);
+      status(`Login failed: ${e.message}`);
+    }
+  }
+}
+
+// Login with Keycloak
+function loginWithKeycloak() {
+  console.log("Login button clicked, redirecting to Keycloak...");
+  const authUrl = `${KEYCLOAK_URL}/realms/${REALM}/protocol/openid-connect/auth` +
+      `?client_id=${CLIENT_ID}` +
+      `&response_type=code` +
+      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&scope=openid%20email%20profile` +
+      `&prompt=login`;
+
+  console.log("Auth URL:", authUrl);
+  window.location.href = authUrl;
+}
+
+// Logout
+function logout() {
+  console.log("Logout button clicked");
+
+  // Clear token from UI and storage
+  document.querySelector("#token").value = "";
+  localStorage.removeItem("gameapi_token");
+
+  // Update UI
+  document.querySelector("#keycloakLoginBtn").style.display = "inline-block";
+  document.querySelector("#logoutBtn").style.display = "none";
+
+  status("Logged out.");
+
+  // Reload games (will now show public view only)
+  loadGames();
+}
+
+// Check for saved token on page load
+function checkSavedToken() {
+  const savedToken = localStorage.getItem("gameapi_token");
+  console.log("Saved token present:", !!savedToken);
+  if (savedToken) {
+    document.querySelector("#token").value = savedToken;
+    document.querySelector("#keycloakLoginBtn").style.display = "none";
+    document.querySelector("#logoutBtn").style.display = "inline-block";
+    status("Welcome back! You are logged in.");
+  }
+}
+
 // ── Event listeners ──────────────────────────────────────────────────────────
 
-document.querySelector("#loadGamesBtn").addEventListener("click", () => loadGames());
-document.querySelector("#searchForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  loadGames(document.querySelector("#searchInput").value.trim());
-});
-document.querySelector("#gameForm").addEventListener("submit", saveGame);
-document.querySelector("#clearFormBtn").addEventListener("click", clearForm);
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("DOM loaded, attaching event listeners");
 
-loadGames();
+  const loadBtn = document.querySelector("#loadGamesBtn");
+  const searchForm = document.querySelector("#searchForm");
+  const gameForm = document.querySelector("#gameForm");
+  const clearBtn = document.querySelector("#clearFormBtn");
+  const loginBtn = document.querySelector("#keycloakLoginBtn");
+  const logoutBtn = document.querySelector("#logoutBtn");
+  const tokenInput = document.querySelector("#token");
+
+  if (loadBtn) loadBtn.addEventListener("click", () => loadGames());
+  if (searchForm) searchForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    loadGames(document.querySelector("#searchInput").value.trim());
+  });
+  if (gameForm) gameForm.addEventListener("submit", saveGame);
+  if (clearBtn) clearBtn.addEventListener("click", clearForm);
+  if (loginBtn) {
+    console.log("Login button found, attaching click handler");
+    loginBtn.addEventListener("click", loginWithKeycloak);
+  } else {
+    console.error("Login button not found!");
+  }
+  if (logoutBtn) logoutBtn.addEventListener("click", logout);
+  if (tokenInput) {
+    tokenInput.addEventListener("change", (e) => {
+      if (e.target.value.trim()) {
+        localStorage.setItem("gameapi_token", e.target.value.trim());
+        if (loginBtn) loginBtn.style.display = "none";
+        if (logoutBtn) logoutBtn.style.display = "inline-block";
+      } else {
+        localStorage.removeItem("gameapi_token");
+        if (loginBtn) loginBtn.style.display = "inline-block";
+        if (logoutBtn) logoutBtn.style.display = "none";
+      }
+    });
+  }
+
+  checkSavedToken();
+  checkForOAuthCallback();
+  loadGames();
+});

@@ -1,27 +1,28 @@
 services:
-  gameapi-keycloak:
+  keycloak:
     image: quay.io/keycloak/keycloak:26.2
     container_name: gameapi-keycloak
     restart: unless-stopped
     command:
       - "start-dev"
-      - "--hostname=keycloak"
-      - "--hostname-strict=false"
       - "--http-port=8080"
+      - "--hostname=localhost"
+      - "--hostname-strict=false"
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-      KC_HOSTNAME: keycloak
-      KC_HOSTNAME_PORT: 8080
-      KC_PROXY: edge
+      KC_DB: dev-file
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8180
       KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: edge
     ports:
       - "8180:8080"
     networks:
-      gameapi-net:
-        aliases:
-          - keycloak
-          - gameapi-keycloak
+      - gameapi-net
+    extra_hosts:
+      - "localhost:host-gateway"
 
 networks:
   gameapi-net:
