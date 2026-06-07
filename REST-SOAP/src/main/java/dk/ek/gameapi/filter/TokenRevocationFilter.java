@@ -7,7 +7,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -28,22 +28,34 @@ public class TokenRevocationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
 
-        log.info("TokenRevocationFilter - Processing request: {} {}", request.getMethod(), request.getRequestURI());
+        String method = request.getMethod();
+        String path = request.getRequestURI();
 
+        // Check if this is a public GET endpoint (should skip revocation check)
+        boolean isPublicGetEndpoint = HttpMethod.GET.matches(method) && (
+                path.equals("/api/v1/games") ||
+                        path.matches("^/api/v1/games/\\d+$") ||
+                        path.equals("/api/v1/games/available")
+        );
+
+        // Skip revocation check for public GET endpoints
+        if (isPublicGetEndpoint) {
+            log.debug("Skipping revocation check for public GET: {} {}", method, path);
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // For protected endpoints, check if token is revoked
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication != null && authentication.isAuthenticated()) {
-            log.info("TokenRevocationFilter - Authentication found, authenticated: {}", authentication.isAuthenticated());
-
             Object principal = authentication.getPrincipal();
             if (principal instanceof Jwt jwt) {
                 String tokenId = jwt.getId();
                 boolean isRevoked = tokenRevocationService.isTokenRevoked(tokenId);
 
-                log.info("TokenRevocationFilter - Token ID: {}, Revoked: {}", tokenId, isRevoked);
-
                 if (isRevoked) {
-                    log.warn("TokenRevocationFilter - REJECTING request with revoked token: {}", tokenId);
+                    log.warn("Rejected {} request on {} with revoked token: {}", method, path, tokenId);
                     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                     response.setContentType("application/json");
                     response.getWriter().write("{\"error\": \"Token has been revoked\", \"status\": 401}");
@@ -52,8 +64,6 @@ public class TokenRevocationFilter extends OncePerRequestFilter {
                     return;
                 }
             }
-        } else {
-            log.info("TokenRevocationFilter - No authentication found");
         }
 
         filterChain.doFilter(request, response);
