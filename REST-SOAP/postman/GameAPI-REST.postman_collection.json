@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "858f56bb-e60c-4ad8-bf8a-057a1a87726c",
-    "name": "GameAPI REST Test Suite",
+    "_postman_id": "aa7ef19c-3c67-4d20-9a95-e35a2ed4326d",
+    "name": "GameAPI Rest Test Suite",
     "description": "Complete test suite with positive and negative tests for public and authenticated endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "53855432",
-    "_collection_link": "https://go.postman.co/collection/53855432-858f56bb-e60c-4ad8-bf8a-057a1a87726c?source=collection_link"
+    "_collection_link": "https://go.postman.co/collection/53855432-aa7ef19c-3c67-4d20-9a95-e35a2ed4326d?source=collection_link"
   },
   "item": [
     {
@@ -222,7 +222,8 @@
                 "exec": [
                   "pm.test(\"Status code is 200\", function() {",
                   "    pm.response.to.have.status(200);",
-                  "});"
+                  "});",
+                  ""
                 ],
                 "type": "text/javascript",
                 "packages": {},
@@ -622,7 +623,93 @@
       "name": "PART 4: AUTHENTICATED NEGATIVE TESTS",
       "item": [
         {
-          "name": "4.1 POST Create Game - Invalid Data (400)",
+          "name": "4.1 POST Create Game - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Should Not Create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 POST Create Game - Invalid Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.token.here"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Should Not Create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 POST Create Game - Invalid Data (400)",
           "event": [
             {
               "listen": "test",
@@ -669,7 +756,7 @@
           "response": []
         },
         {
-          "name": "4.2 PUT Update Game - Not Found (404)",
+          "name": "4.4 PUT Update Game - Not Found (404)",
           "event": [
             {
               "listen": "test",
@@ -715,7 +802,7 @@
           "response": []
         },
         {
-          "name": "4.3 DELETE Game - Not Found (404)",
+          "name": "4.5 DELETE Game - Not Found (404)",
           "event": [
             {
               "listen": "test",
@@ -753,7 +840,7 @@
           "response": []
         },
         {
-          "name": "4.4 DELETE Game - No Token (401)",
+          "name": "4.6 DELETE Game - No Token (401)",
           "event": [
             {
               "listen": "test",
@@ -880,7 +967,46 @@
           "response": []
         },
         {
-          "name": "5.3 Try API with Revoked Token (Should fail - 401)",
+          "name": "5.3 Try Public API with Revoked Token (Should pass - 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Try Private API with Revoked Token (Should fail - 401)",
           "event": [
             {
               "listen": "test",
@@ -888,6 +1014,13 @@
                 "exec": [
                   "pm.test(\"Status code is 401 Unauthorized\", function() {",
                   "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Token is marked as revoked or invalid\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.revoked === true) {",
+                  "        pm.expect(jsonData.valid).to.equal(false);",
+                  "    }",
                   "});"
                 ],
                 "type": "text/javascript",
@@ -900,20 +1033,27 @@
             "method": "POST",
             "header": [
               {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
                 "key": "Authorization",
                 "value": "Bearer {{access_token}}"
               }
             ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{game_name}}\",\n  \"slug\": \"{{game_slug}}\",\n  \"yearPublished\": {{year_published}},\n  \"bggRating\": {{bgg_rating}},\n  \"difficultyRating\": {{difficulty_rating}},\n  \"description\": \"{{game_description}}\",\n  \"playingTime\": {{playing_time}},\n  \"available\": true,\n  \"minPlayers\": {{min_players}},\n  \"maxPlayers\": {{max_players}},\n  \"minimumAge\": {{min_age}},\n  \"thumbnail\": \"{{thumbnail_url}}\",\n  \"image\": \"{{image_url}}\"\n}"
+            },
             "url": {
-              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "raw": "{{baseUrl}}/api/v1/games",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "auth",
-                "logout"
+                "games"
               ]
             }
           },
