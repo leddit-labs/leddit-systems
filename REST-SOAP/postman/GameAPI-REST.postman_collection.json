@@ -616,6 +616,108 @@
             }
           },
           "response": []
+        },
+        {
+          "name": "3.4 GET Game By ID with HATEAOS (authenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "",
+                  "let links;",
+                  "if (json._embedded) {",
+                  "    const items = json._embedded[Object.keys(json._embedded)[0]] || [];",
+                  "    pm.test('At least one game returned', () => pm.expect(items.length).to.be.above(0));",
+                  "    links = (items[0] || {})._links || {};",
+                  "} else {",
+                  "    links = json._links || {};",
+                  "}",
+                  "",
+                  "pm.test('Has self link',  () => pm.expect(links).to.have.property('self'));",
+                  "pm.test('Has games link', () => pm.expect(links).to.have.property('games'));",
+                  "pm.test('Has update link (authenticated)', () => pm.expect(links).to.have.property('update'));",
+                  "pm.test('Has delete link (authenticated)', () => pm.expect(links).to.have.property('delete'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 GET Game By ID with HATEOAS (unauthenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "",
+                  "let links;",
+                  "if (json._embedded) {",
+                  "    const items = json._embedded[Object.keys(json._embedded)[0]] || [];",
+                  "    pm.test('At least one game returned', () => pm.expect(items.length).to.be.above(0));",
+                  "    links = (items[0] || {})._links || {};",
+                  "} else {",
+                  "    links = json._links || {};",
+                  "}",
+                  "",
+                  "pm.test('Has self link',  () => pm.expect(links).to.have.property('self'));",
+                  "pm.test('Has games link', () => pm.expect(links).to.have.property('games'));",
+                  "pm.test('DOES NOT have update link (unauthenticated)', () => pm.expect(links).to.not.have.property('update'));",
+                  "pm.test('DOES NOT have delete link (unauthenticated)', () => pm.expect(links).to.not.have.property('delete'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
         }
       ]
     },
