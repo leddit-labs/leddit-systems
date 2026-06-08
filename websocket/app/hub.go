@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"html"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -22,8 +23,10 @@ func removeClient(conn *websocket.Conn) {
 	mutex.Unlock()
 }
 
-func broadcastMessage(msg any) {
-	data, _ := json.Marshal(msg)
+func broadcastMessage(msg Message) {
+	safeMsg := sanitizeMessage(msg)
+
+	data, _ := json.Marshal(safeMsg)
 
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -31,4 +34,9 @@ func broadcastMessage(msg any) {
 	for client := range clients {
 		client.WriteMessage(websocket.TextMessage, data)
 	}
+}
+func sanitizeMessage(msg Message) Message {
+	msg.Title = html.EscapeString(msg.Title)
+	msg.Text = html.EscapeString(msg.Text)
+	return msg
 }

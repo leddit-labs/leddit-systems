@@ -7,6 +7,19 @@ import (
 )
 
 func wsHandler(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	allowedOrigins := map[string]bool{
+		"http://localhost:3000": true, 			//3000 is just to emulate some frontend that's normally 3000
+		//"https://frontend.com": true,			//here a future frontend url could be
+	}
+
+	origin := r.Header.Get("Origin")
+
+	if !allowedOrigins[origin] {
+		log.Println("blocked websocket connection from origin:", origin)
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	
 
 	ws, err := upgradeConn(w, r)
 	if err != nil {
