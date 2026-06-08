@@ -2,6 +2,7 @@ package main
 
 import (
 	pb "grpc-app/generated"
+	"html"
 
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -46,5 +47,7 @@ func ValidateReview(
 		)
 	}
 
+	msg.Title = html.EscapeString(msg.Title)
+	msg.Text = html.EscapeString(msg.Text)
 	return nil
 }
