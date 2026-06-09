@@ -2,6 +2,7 @@ package dk.ek.gameapi.rest.dto;
 
 import dk.ek.gameapi.entity.AuditLog;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.time.LocalDateTime;
 
 public record AuditLogResponse(
@@ -11,8 +12,8 @@ public record AuditLogResponse(
         String rowPk,
         LocalDateTime changedAt,
         String changedBy,
-        String oldData,
-        String newData
+        JsonNode oldData,
+        JsonNode newData
 ) {
     public static AuditLogResponse from(AuditLog log) {
         return new AuditLogResponse(

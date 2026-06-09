@@ -64,7 +64,7 @@ public class SecurityConfig {
                         // Allow OPTIONS for CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         // Public GET endpoints
-                        .requestMatchers(HttpMethod.GET, "/api/v1/games", "/api/v1/games/**", "/api/v1/games/available", "/api/v1/games/search/**", "/api/v1/logs").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/games", "/api/v1/games/**", "/api/v1/games/available", "/api/v1/games/search/**", "/api/v1/logs", "/api/v1/artists", "/api/v1/artists/**").permitAll()
                         // Swagger
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
                         // SOAP

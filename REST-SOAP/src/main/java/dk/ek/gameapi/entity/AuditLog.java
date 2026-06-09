@@ -11,6 +11,10 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import com.fasterxml.jackson.databind.JsonNode;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,9 +42,11 @@ public class AuditLog {
     @Column(name = "changed_by")
     private String changedBy;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "old_data", columnDefinition = "json")
-    private String oldData;
+    private JsonNode oldData;
 
+    @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "new_data", columnDefinition = "json")
-    private String newData;
+    private JsonNode newData;
 }
