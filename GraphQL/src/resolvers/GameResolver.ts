@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 @Resolver(Game)
 export class GameResolver {
 
-  // Query 1: Get all games with optional search filter
+  // Query 1
   @Query(() => [Game])
   async getAllGames(@Arg("search", { nullable: true }) search?: string) {
     return prisma.game.findMany({
@@ -15,19 +15,19 @@ export class GameResolver {
     });
   }
 
-  // Query 2: Get a single game by ID
+  // Query 2
   @Query(() => Game, { nullable: true })
   async getGameById(@Arg("id", () => Int) id: number) {
     return prisma.game.findUnique({ where: { id } });
   }
 
-  // Mutation 1: Create a new game
+  // Mutation 1
   @Mutation(() => Game)
   async createGame(@Arg("name") name: string) {
     return prisma.game.create({ data: { name } });
   }
 
-  // Mutation 2: Delete a game by ID
+  // Mutation 2
   @Mutation(() => Game)
   async deleteGame(@Arg("id", () => Int) id: number) {
     return prisma.game.delete({ where: { id } });
