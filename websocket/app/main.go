@@ -8,7 +8,7 @@ import (
 
 func wsHandler(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	allowedOrigins := map[string]bool{
-		"http://localhost:3000": true, 			//3000 is just to emulate some frontend that's normally 3000
+		"http://localhost:3000": true, 			//3000 is just to emulate some frontend
 		//"https://frontend.com": true,			//here a future frontend url could be
 	}
 
