@@ -1,11 +1,11 @@
 {
   "info": {
-    "_postman_id": "aa7ef19c-3c67-4d20-9a95-e35a2ed4326d",
-    "name": "GameAPI Rest Test Suite",
+    "_postman_id": "4c411284-1f51-4f77-b139-fad2156fbea0",
+    "name": "GameAPI REST",
     "description": "Complete test suite with positive and negative tests for public and authenticated endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "53855432",
-    "_collection_link": "https://go.postman.co/collection/53855432-aa7ef19c-3c67-4d20-9a95-e35a2ed4326d?source=collection_link"
+    "_exporter_id": "29383084",
+    "_collection_link": "https://go.postman.co/collection/29383084-4c411284-1f51-4f77-b139-fad2156fbea0?source=collection_link"
   },
   "item": [
     {
@@ -382,6 +382,188 @@
               "path": [
                 "swagger-ui",
                 "index.html"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 GET all Designers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"response page contains 20 designers\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var designers = jsonData._embedded.designerResponseList;",
+                  "",
+                  "    pm.expect(designers.length).to.equal(20);",
+                  "});",
+                  "",
+                  "pm.test(\"page number is 0\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.page.number).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/designers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "designers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.8 GET all Artists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"response (page) contains 20 artists\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var artists = jsonData._embedded.artistResponseList;",
+                  "",
+                  "    pm.expect(artists.length).to.equal(20);",
+                  "});",
+                  "",
+                  "pm.test(\"page number is 0\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.page.number).to.equal(0);",
+                  "});",
+                  "",
+                  "pm.test(\"artist list contains Jean du Poël\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var artists = jsonData._embedded.artistResponseList;",
+                  "",
+                  "    var artist = artists.find(a => a.name === \"Jean du Poël\");",
+                  "",
+                  "    pm.expect(artist).to.exist;",
+                  "    pm.expect(artist.id).to.equal(5);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/artists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "artists"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.9 Get Designers by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/designers/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "designers",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.0 Get Artists by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"artist's name is Jean du Poël\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.name).to.equal(\"Jean du Poël\");",
+                  "});",
+                  "",
+                  "pm.test(\"artist id is 5\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.id).to.equal(5);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/artists/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "artists",
+                "5"
               ]
             }
           },
@@ -1279,128 +1461,103 @@
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:8080",
-      "type": "string"
+      "value": "http://localhost:8080"
     },
     {
       "key": "keycloakUrl",
-      "value": "http://localhost:8180",
-      "type": "string"
+      "value": "http://localhost:8180"
     },
     {
       "key": "realm",
-      "value": "gameapi",
-      "type": "string"
+      "value": "gameapi"
     },
     {
       "key": "test_username",
-      "value": "testuser",
-      "type": "string"
+      "value": "testuser"
     },
     {
       "key": "test_password",
-      "value": "testpass123",
-      "type": "string"
+      "value": "testpass123"
     },
     {
       "key": "access_token",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "cleanup_token",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "refresh_token",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "gameId",
-      "value": "1",
-      "type": "string"
+      "value": "1"
     },
     {
       "key": "created_game_id",
-      "value": "",
-      "type": "string"
+      "value": ""
     },
     {
       "key": "search_term",
-      "value": "game",
-      "type": "string"
+      "value": "game"
     },
     {
       "key": "game_name",
-      "value": "Postman Test Game",
-      "type": "string"
+      "value": "Postman Test Game"
     },
     {
       "key": "updated_game_name",
-      "value": "Postman Test Game Updated",
-      "type": "string"
+      "value": "Postman Test Game Updated"
     },
     {
       "key": "game_slug",
-      "value": "postman-test-game",
-      "type": "string"
+      "value": "postman-test-game"
     },
     {
       "key": "updated_game_slug",
-      "value": "postman-test-game-updated",
-      "type": "string"
+      "value": "postman-test-game-updated"
     },
     {
       "key": "year_published",
-      "value": "2024",
-      "type": "string"
+      "value": "2024"
     },
     {
       "key": "bgg_rating",
-      "value": "4.5",
-      "type": "string"
+      "value": "4.5"
     },
     {
       "key": "difficulty_rating",
-      "value": "3.0",
-      "type": "string"
+      "value": "3.0"
     },
     {
       "key": "game_description",
-      "value": "A test game created by Postman test suite",
-      "type": "string"
+      "value": "A test game created by Postman test suite"
     },
     {
       "key": "playing_time",
-      "value": "60",
-      "type": "string"
+      "value": "60"
     },
     {
       "key": "min_players",
-      "value": "1",
-      "type": "string"
+      "value": "1"
     },
     {
       "key": "max_players",
-      "value": "4",
-      "type": "string"
+      "value": "4"
     },
     {
       "key": "min_age",
-      "value": "8",
-      "type": "string"
+      "value": "8"
     },
     {
       "key": "thumbnail_url",
-      "value": "https://example.com/thumb.jpg",
-      "type": "string"
+      "value": "https://example.com/thumb.jpg"
     },
     {
       "key": "image_url",
-      "value": "https://example.com/image.jpg",
-      "type": "string"
+      "value": "https://example.com/image.jpg"
     }
   ]
 }
