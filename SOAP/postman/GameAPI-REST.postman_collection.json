@@ -1,0 +1,1563 @@
+{
+  "info": {
+    "_postman_id": "4c411284-1f51-4f77-b139-fad2156fbea0",
+    "name": "GameAPI REST",
+    "description": "Complete test suite with positive and negative tests for public and authenticated endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "29383084",
+    "_collection_link": "https://go.postman.co/collection/29383084-4c411284-1f51-4f77-b139-fad2156fbea0?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "AUTHENTICATION SETUP",
+      "item": [
+        {
+          "name": "Get Access Token (For Authenticated Tests)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has access_token\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData.access_token).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test(\"Response has refresh_token\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('refresh_token');",
+                  "    pm.expect(jsonData.refresh_token).to.not.be.empty;",
+                  "});",
+                  "",
+                  "pm.test(\"Token type is Bearer\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.token_type).to.equal('Bearer');",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set(\"access_token\", response.access_token);",
+                  "    pm.collectionVariables.set(\"refresh_token\", response.refresh_token);",
+                  "    console.log(\"Token obtained successfully\");",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "gameapi-client",
+                  "type": "text"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "dev-secret-2024",
+                  "type": "text"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password",
+                  "type": "text"
+                },
+                {
+                  "key": "username",
+                  "value": "{{test_username}}",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "{{test_password}}",
+                  "type": "text"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid email profile",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 1: PUBLIC POSITIVE TESTS (No Login Required)",
+      "item": [
+        {
+          "name": "1.1 GET All Games - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has HATEOAS links\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.content && jsonData.content.length > 0 && jsonData.content[0]._links) {",
+                  "        pm.expect(jsonData.content[0]._links).to.have.property('self');",
+                  "        pm.expect(jsonData.content[0]._links).to.have.property('games');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.2 GET Games with Search - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Search results contain search term\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    var searchTerm = pm.variables.get(\"search_term\").toLowerCase();",
+                  "    if (jsonData.content && jsonData.content.length > 0) {",
+                  "        var matches = jsonData.content.some(game => ",
+                  "            game.name && game.name.toLowerCase().includes(searchTerm)",
+                  "        );",
+                  "        pm.expect(matches).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games?search={{search_term}}&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "{{search_term}}"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.3 GET Games with Pagination - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  ""
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games?page=0&size=5&sort=name,asc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "5"
+                },
+                {
+                  "key": "sort",
+                  "value": "name,asc"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.4 GET Available Games - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"All returned games are available\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.content && jsonData.content.length > 0) {",
+                  "        var allAvailable = jsonData.content.every(game => game.available === true);",
+                  "        pm.expect(allAvailable).to.be.true;",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/available",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "available"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.5 GET Game by ID - No Auth (Valid ID)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has id field\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test(\"Response has name field\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('name');",
+                  "});",
+                  "",
+                  "pm.test(\"ID matches requested ID\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    var requestedId = parseInt(pm.variables.get(\"gameId\"));",
+                  "    pm.expect(jsonData.id).to.equal(requestedId);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.6 GET Swagger UI - No Auth",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is HTML\", function() {",
+                  "    pm.expect(pm.response.headers.get('Content-Type')).to.include('text/html');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/swagger-ui/index.html",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "swagger-ui",
+                "index.html"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.7 GET all Designers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"response page contains 20 designers\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var designers = jsonData._embedded.designerResponseList;",
+                  "",
+                  "    pm.expect(designers.length).to.equal(20);",
+                  "});",
+                  "",
+                  "pm.test(\"page number is 0\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.page.number).to.equal(0);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/designers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "designers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.8 GET all Artists",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"response (page) contains 20 artists\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var artists = jsonData._embedded.artistResponseList;",
+                  "",
+                  "    pm.expect(artists.length).to.equal(20);",
+                  "});",
+                  "",
+                  "pm.test(\"page number is 0\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.page.number).to.equal(0);",
+                  "});",
+                  "",
+                  "pm.test(\"artist list contains Jean du Poël\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    var artists = jsonData._embedded.artistResponseList;",
+                  "",
+                  "    var artist = artists.find(a => a.name === \"Jean du Poël\");",
+                  "",
+                  "    pm.expect(artist).to.exist;",
+                  "    pm.expect(artist.id).to.equal(5);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/artists",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "artists"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "1.9 Get Designers by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/designers/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "designers",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "2.0 Get Artists by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"artist's name is Jean du Poël\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.name).to.equal(\"Jean du Poël\");",
+                  "});",
+                  "",
+                  "pm.test(\"artist id is 5\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "",
+                  "    pm.expect(jsonData.id).to.equal(5);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/artists/5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "artists",
+                "5"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 2: PUBLIC NEGATIVE TESTS (No Login Required)",
+      "item": [
+        {
+          "name": "2.1 GET Game by ID - Not Found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404\", function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Error message indicates not found\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.message || jsonData.error).to.be.a('string');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 3: AUTHENTICATED POSITIVE TESTS (Login Required)",
+      "item": [
+        {
+          "name": "3.1 POST Create New Game",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201 Created\", function() {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has id field\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "});",
+                  "",
+                  "pm.test(\"Game name matches request\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedName = pm.variables.get(\"game_name\");",
+                  "    pm.expect(jsonData.name).to.equal(expectedName);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has HATEOAS links\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData._links) {",
+                  "        pm.expect(jsonData._links).to.have.property('self');",
+                  "        pm.expect(jsonData._links).to.have.property('update');",
+                  "        pm.expect(jsonData._links).to.have.property('delete');",
+                  "        pm.expect(jsonData._links).to.have.property('games');",
+                  "    }",
+                  "});",
+                  "",
+                  "if (pm.response.code === 201) {",
+                  "    var game = pm.response.json();",
+                  "    pm.collectionVariables.set(\"created_game_id\", game.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{game_name}}\",\n  \"slug\": \"{{game_slug}}\",\n  \"yearPublished\": {{year_published}},\n  \"bggRating\": {{bgg_rating}},\n  \"difficultyRating\": {{difficulty_rating}},\n  \"description\": \"{{game_description}}\",\n  \"playingTime\": {{playing_time}},\n  \"available\": true,\n  \"minPlayers\": {{min_players}},\n  \"maxPlayers\": {{max_players}},\n  \"minimumAge\": {{min_age}},\n  \"thumbnail\": \"{{thumbnail_url}}\",\n  \"image\": \"{{image_url}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.2 PUT Update Game",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Game name was updated\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    var expectedName = pm.variables.get(\"updated_game_name\");",
+                  "    pm.expect(jsonData.name).to.equal(expectedName);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has HATEOAS links\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData._links) {",
+                  "        pm.expect(jsonData._links).to.have.property('self');",
+                  "        pm.expect(jsonData._links).to.have.property('update');",
+                  "        pm.expect(jsonData._links).to.have.property('delete');",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{updated_game_name}}\",\n  \"slug\": \"{{updated_game_slug}}\",\n  \"yearPublished\": 2023,\n  \"bggRating\": 4.5,\n  \"difficultyRating\": 3.2,\n  \"description\": \"Updated via API test\",\n  \"playingTime\": 90,\n  \"available\": true,\n  \"minPlayers\": 2,\n  \"maxPlayers\": 6,\n  \"minimumAge\": 12,\n  \"thumbnail\": \"https://example.com/updated.jpg\",\n  \"image\": \"https://example.com/updated-full.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{created_game_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{created_game_id}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.3 Validate Token (Should be valid)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Token is valid\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.valid).to.equal(true);",
+                  "    pm.expect(jsonData.revoked).to.equal(false);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has token info\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token_id');",
+                  "    pm.expect(jsonData).to.have.property('expires_at');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "validate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.4 GET Game By ID with HATEAOS (authenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "",
+                  "let links;",
+                  "if (json._embedded) {",
+                  "    const items = json._embedded[Object.keys(json._embedded)[0]] || [];",
+                  "    pm.test('At least one game returned', () => pm.expect(items.length).to.be.above(0));",
+                  "    links = (items[0] || {})._links || {};",
+                  "} else {",
+                  "    links = json._links || {};",
+                  "}",
+                  "",
+                  "pm.test('Has self link',  () => pm.expect(links).to.have.property('self'));",
+                  "pm.test('Has games link', () => pm.expect(links).to.have.property('games'));",
+                  "pm.test('Has update link (authenticated)', () => pm.expect(links).to.have.property('update'));",
+                  "pm.test('Has delete link (authenticated)', () => pm.expect(links).to.have.property('delete'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "3.5 GET Game By ID with HATEOAS (unauthenticated)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 OK', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "",
+                  "let links;",
+                  "if (json._embedded) {",
+                  "    const items = json._embedded[Object.keys(json._embedded)[0]] || [];",
+                  "    pm.test('At least one game returned', () => pm.expect(items.length).to.be.above(0));",
+                  "    links = (items[0] || {})._links || {};",
+                  "} else {",
+                  "    links = json._links || {};",
+                  "}",
+                  "",
+                  "pm.test('Has self link',  () => pm.expect(links).to.have.property('self'));",
+                  "pm.test('Has games link', () => pm.expect(links).to.have.property('games'));",
+                  "pm.test('DOES NOT have update link (unauthenticated)', () => pm.expect(links).to.not.have.property('update'));",
+                  "pm.test('DOES NOT have delete link (unauthenticated)', () => pm.expect(links).to.not.have.property('delete'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{gameId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{gameId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 4: AUTHENTICATED NEGATIVE TESTS",
+      "item": [
+        {
+          "name": "4.1 POST Create Game - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Should Not Create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.2 POST Create Game - Invalid Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer invalid.token.here"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Should Not Create\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.3 POST Create Game - Invalid Data (400)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400 Bad Request\", function() {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"playingTime\": -5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.4 PUT Update Game - Not Found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Game\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.5 DELETE Game - Not Found (404)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 404 Not Found\", function() {",
+                  "    pm.response.to.have.status(404);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/99999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "99999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "4.6 DELETE Game - No Token (401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{created_game_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{created_game_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 5: TOKEN REVOCATION TESTS",
+      "item": [
+        {
+          "name": "5.1 Logout (Revokes Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Logout response confirms success\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('success');",
+                  "    pm.expect(jsonData).to.have.property('token_id');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.2 Validate Revoked Token (Should fail - 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Token is marked as revoked or invalid\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.revoked === true) {",
+                  "        pm.expect(jsonData.valid).to.equal(false);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "validate"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.3 Try Public API with Revoked Token (Should pass - 200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function() {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "5.4 Try Private API with Revoked Token (Should fail - 401)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function() {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Token is marked as revoked or invalid\", function() {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.revoked === true) {",
+                  "        pm.expect(jsonData.valid).to.equal(false);",
+                  "    }",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"{{game_name}}\",\n  \"slug\": \"{{game_slug}}\",\n  \"yearPublished\": {{year_published}},\n  \"bggRating\": {{bgg_rating}},\n  \"difficultyRating\": {{difficulty_rating}},\n  \"description\": \"{{game_description}}\",\n  \"playingTime\": {{playing_time}},\n  \"available\": true,\n  \"minPlayers\": {{min_players}},\n  \"maxPlayers\": {{max_players}},\n  \"minimumAge\": {{min_age}},\n  \"thumbnail\": \"{{thumbnail_url}}\",\n  \"image\": \"{{image_url}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "PART 6: CLEANUP",
+      "item": [
+        {
+          "name": "6.1 Get New Token for Cleanup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var response = pm.response.json();",
+                  "    pm.collectionVariables.set(\"cleanup_token\", response.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "client_id",
+                  "value": "gameapi-client"
+                },
+                {
+                  "key": "client_secret",
+                  "value": "dev-secret-2024"
+                },
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "username",
+                  "value": "{{test_username}}"
+                },
+                {
+                  "key": "password",
+                  "value": "{{test_password}}"
+                },
+                {
+                  "key": "scope",
+                  "value": "openid"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{keycloakUrl}}/realms/{{realm}}/protocol/openid-connect/token",
+              "host": [
+                "{{keycloakUrl}}"
+              ],
+              "path": [
+                "realms",
+                "{{realm}}",
+                "protocol",
+                "openid-connect",
+                "token"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "6.2 Delete Created Game (Cleanup)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204 No Content\", function() {",
+                  "    pm.response.to.have.status(204);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{cleanup_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/games/{{created_game_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "games",
+                "{{created_game_id}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "keycloakUrl",
+      "value": "http://localhost:8180"
+    },
+    {
+      "key": "realm",
+      "value": "gameapi"
+    },
+    {
+      "key": "test_username",
+      "value": "testuser"
+    },
+    {
+      "key": "test_password",
+      "value": "testpass123"
+    },
+    {
+      "key": "access_token",
+      "value": ""
+    },
+    {
+      "key": "cleanup_token",
+      "value": ""
+    },
+    {
+      "key": "refresh_token",
+      "value": ""
+    },
+    {
+      "key": "gameId",
+      "value": "1"
+    },
+    {
+      "key": "created_game_id",
+      "value": ""
+    },
+    {
+      "key": "search_term",
+      "value": "game"
+    },
+    {
+      "key": "game_name",
+      "value": "Postman Test Game"
+    },
+    {
+      "key": "updated_game_name",
+      "value": "Postman Test Game Updated"
+    },
+    {
+      "key": "game_slug",
+      "value": "postman-test-game"
+    },
+    {
+      "key": "updated_game_slug",
+      "value": "postman-test-game-updated"
+    },
+    {
+      "key": "year_published",
+      "value": "2024"
+    },
+    {
+      "key": "bgg_rating",
+      "value": "4.5"
+    },
+    {
+      "key": "difficulty_rating",
+      "value": "3.0"
+    },
+    {
+      "key": "game_description",
+      "value": "A test game created by Postman test suite"
+    },
+    {
+      "key": "playing_time",
+      "value": "60"
+    },
+    {
+      "key": "min_players",
+      "value": "1"
+    },
+    {
+      "key": "max_players",
+      "value": "4"
+    },
+    {
+      "key": "min_age",
+      "value": "8"
+    },
+    {
+      "key": "thumbnail_url",
+      "value": "https://example.com/thumb.jpg"
+    },
+    {
+      "key": "image_url",
+      "value": "https://example.com/image.jpg"
+    }
+  ]
+}
