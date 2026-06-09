@@ -1,11 +1,12 @@
 
 package dk.ek.gameapi.soap;
 
-import dk.ek.gameapi.rest.dto.GameRequest;
-import dk.ek.gameapi.rest.dto.GameResponse;
-import dk.ek.gameapi.rest.dto.PagedResponse;
 import dk.ek.gameapi.service.GameService;
 import dk.ek.gameapi.soap.gen.*;
+import dk.ek.gameapi.dto.GameRequest;
+import dk.ek.gameapi.dto.GameResponse;
+import dk.ek.gameapi.dto.PagedResponse;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
