@@ -18,3 +18,18 @@ type Game struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 }
+
+type ReviewMessage struct {
+	Type       string `json:"type"`
+	Title      string `json:"title"`
+	Text       string `json:"text"`
+	StarAmount int    `json:"star_amount"`
+	UserId     int    `json:"user_id"`
+	GameId     int    `json:"game_id"`
+}
+
+type ErrorResponse struct {
+	Type    string `json:"type"`
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
