@@ -1,9 +1,6 @@
 
 package dk.ek.gameapi.soap;
 
-import dk.ek.gameapi.rest.dto.GameRequest;
-import dk.ek.gameapi.rest.dto.GameResponse;
-import dk.ek.gameapi.rest.dto.PagedResponse;
 import dk.ek.gameapi.service.GameService;
 import dk.ek.gameapi.soap.gen.*;
 import lombok.RequiredArgsConstructor;
