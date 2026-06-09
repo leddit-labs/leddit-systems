@@ -1,5 +1,5 @@
 services:
-  gameapi-redis2:
+  gameapi-redis:
     image: redis:7-alpine
     container_name: gameapi-redis
     restart: unless-stopped
@@ -15,16 +15,16 @@ services:
 
   gameapi-rest:
     build: .
-    container_name: gameapi
+    container_name: gameapi-rest
     restart: unless-stopped
     depends_on:
-      gameapi-redis2:
+      gameapi-redis:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: "jdbc:mysql://gameapi-mysql:3306/si_db?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC"
       SPRING_DATASOURCE_USERNAME: gameapi
       SPRING_DATASOURCE_PASSWORD: gameapi
-      SPRING_DATA_REDIS_HOST: gameapi-redis2
+      SPRING_DATA_REDIS_HOST: gameapi-redis
       SPRING_DATA_REDIS_PORT: 6379
       SPRING_JPA_HIBERNATE_DDL_AUTO: validate
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI: "http://gameapi-keycloak:8080/realms/gameapi/protocol/openid-connect/certs"

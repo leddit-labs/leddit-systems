@@ -54,9 +54,9 @@ func main() {
 		wsHandler(db, w, r)
 	})
 
-	log.Println("WebSocket server running on :8081")
+	log.Println("WebSocket server running on :8082")
 
-	err := http.ListenAndServe(":8081", nil)
+	err := http.ListenAndServe(":8082", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
