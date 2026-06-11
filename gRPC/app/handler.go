@@ -13,9 +13,8 @@ import (
 )
 
 type GameHandler struct {
-
 	pb.UnimplementedGameServiceServer
-	db *sql.DB
+	db          *sql.DB
 	broadcaster *Broadcaster
 }
 
@@ -30,8 +29,7 @@ func NewGameHandler(
 	}
 }
 
-
-//unary RPC
+// unary RPC
 func (s *GameHandler) GetGame(
 	ctx context.Context,
 	req *pb.GetGameRequest,
@@ -40,7 +38,7 @@ func (s *GameHandler) GetGame(
 	var game pb.GetGameResponse
 
 	err := s.db.QueryRow(`
-		SELECT id, name, description
+		SELECT id, name
 		FROM game
 		WHERE id = ?
 	`, req.Id).Scan(
@@ -70,7 +68,7 @@ func (s *GameHandler) GetGame(
 	return &game, nil
 }
 
-//Bidirectional stream
+// Bidirectional stream
 func (gamehandler *GameHandler) ReviewStream(
 	stream pb.GameService_ReviewStreamServer,
 ) error {
@@ -142,3 +140,4 @@ func (gamehandler *GameHandler) ReviewStream(
 		gamehandler.broadcaster.Broadcast(msg)
 	}
 }
+
