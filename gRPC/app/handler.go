@@ -44,7 +44,6 @@ func (s *GameHandler) GetGame(
 	`, req.Id).Scan(
 		&game.Id,
 		&game.Name,
-		&game.Description,
 	)
 
 	//no game found
