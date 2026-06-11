@@ -36,14 +36,16 @@ func (s *GameHandler) GetGame(
 ) (*pb.GetGameResponse, error) {
 
 	var game pb.GetGameResponse
+	var description sql.NullString
 
 	err := s.db.QueryRow(`
-		SELECT id, name
+		SELECT id, name, description
 		FROM game
 		WHERE id = ?
 	`, req.Id).Scan(
 		&game.Id,
 		&game.Name,
+		&description,
 	)
 
 	//no game found
@@ -62,6 +64,10 @@ func (s *GameHandler) GetGame(
 			codes.Internal,
 			"database error",
 		)
+	}
+
+	if description.Valid {
+		game.Description = description.String
 	}
 
 	return &game, nil
@@ -139,4 +145,3 @@ func (gamehandler *GameHandler) ReviewStream(
 		gamehandler.broadcaster.Broadcast(msg)
 	}
 }
-
