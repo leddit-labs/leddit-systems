@@ -12,29 +12,29 @@ export class Game {
   slug?: string;
 
   @Field(() => Int, { nullable: true })
-  yearPublished?: number;
+  year_published?: number;
 
   @Field(() => Float, { nullable: true })
-  bggRating?: number;
+  bgg_rating?: number;
 
   @Field(() => Float, { nullable: true })
-  difficultyRating?: number;
+  difficulty_rating?: number;
 
   @Field({ nullable: true })
   description?: string;
 
   @Field(() => Int, { nullable: true })
-  playingTime?: number;
+  playing_time?: number;
 
   @Field({ nullable: true })
   available?: boolean;
 
   @Field(() => Int, { nullable: true })
-  minPlayers?: number;
+  min_players?: number;
 
   @Field(() => Int, { nullable: true })
-  maxPlayers?: number;
+  max_players?: number;
 
   @Field(() => Int, { nullable: true })
-  minimumAge?: number;
+  minimum_age?: number;
 }
